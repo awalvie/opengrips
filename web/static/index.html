@@ -164,7 +164,10 @@ footer a { color: inherit; }
 @media (max-width: 899px) {
   #viewer { position: sticky; top: 0; z-index: 4; height: 35vh; min-height: 200px; }
   #panel section { scroll-margin-top: calc(max(35vh, 200px) + 8px); }
+  #viewer.big { height: 70vh; }
+  body:has(#viewer.big) #panel section { scroll-margin-top: calc(70vh + 8px); }
 }
+@media (min-width: 900px) { #b-big { display: none; } }
 @media (min-width: 900px) {
   main { grid-template-columns: 1fr 400px; height: calc(100vh - 61px); }
   #viewer { height: calc(100% - 61px); }
@@ -181,6 +184,7 @@ footer a { color: inherit; }
     <div class="vbtns">
       <label class="pick" id="partner-box"><span id="partner-lbl">Shown in</span><select id="partner"></select></label>
       <button id="b-fit" title="Frame the model">Fit</button>
+      <button id="b-big">Bigger</button>
     </div>
     <p id="legend"><b>Drag</b> to turn · <b>Right-drag</b> or <b>Shift-drag</b> to move · <b>Scroll</b> to zoom · <b>Fit</b> to reset</p>
     <div id="busy" hidden><i></i>Updating preview…</div>

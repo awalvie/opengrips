@@ -642,6 +642,12 @@ $("b-link").onclick = async () => {
 // ---------- start
 $("partner").onchange = (e) => { partnerKey = e.target.value; renderNames(); framed = false; changed(true); };
 $("b-fit").onclick = frame;
+// phones: the 3D view takes 35% of the screen, or 70% for a closer look; the model is framed again in the new size
+$("b-big").onclick = (e) => {
+  const big = viewer.classList.toggle("big");
+  e.currentTarget.textContent = big ? "Smaller" : "Bigger";
+  setTimeout(() => { if (renderer) { resize(); frame(); } }, 50);
+};
 $("b-kit").onclick = downloadKit;
 $("b-jump").onclick = () => $("dl-section").scrollIntoView({ behavior: "smooth" });
 $("add-ins").onclick = () => addItem(newInsert("edge"));
