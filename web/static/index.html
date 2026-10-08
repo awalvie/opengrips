@@ -109,6 +109,11 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 @media (min-width: 900px) { #toast { left: auto; width: 360px; } }
 #b-kit { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
 
+/* phones: the 3D view stays at the top while the settings scroll under it */
+@media (max-width: 899px) {
+  #viewer { position: sticky; top: 0; z-index: 4; height: 35vh; min-height: 200px; }
+  #panel section { scroll-margin-top: calc(max(35vh, 200px) + 8px); }
+}
 @media (min-width: 900px) {
   main { grid-template-columns: 1fr 400px; height: calc(100vh - 61px); }
   #viewer { height: calc(100% - 61px); }
