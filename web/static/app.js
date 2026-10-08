@@ -79,6 +79,15 @@ function status(text, err) {
 }
 function say(text) { $("say").textContent = text; }
 
+// the moment a setting changes, until the new parts are in: dim the model, show a spinner over it.
+// A change that comes from the cache is in within a frame or two; the short delay keeps it from flashing.
+let busyTimer = null;
+function busy(on) {
+  clearTimeout(busyTimer);
+  if (on && renderer) busyTimer = setTimeout(() => { viewer.classList.add("busy"); $("busy").hidden = false; }, 120);
+  else { viewer.classList.remove("busy"); $("busy").hidden = true; }
+}
+
 // ---------- catalog helpers
 const insertDef = (id) => cat.inserts.find((i) => i.id === id);
 const allParams = () => cat.housing.params.concat(...cat.inserts.map((i) => i.params));
@@ -393,6 +402,7 @@ function renderNames() {
 // ---------- preview
 let timer = null;
 function changed(now) {
+  busy(true);
   clearTimeout(timer);
   timer = setTimeout(update, now ? 0 : 500);
 }
@@ -437,18 +447,18 @@ async function update() {
   Object.keys(meshes).forEach((k) => {
     if (!keep.includes(k)) drop(k);
   });
-  if (!jobs.length || !renderer) { status(""); return; }
+  if (!jobs.length || !renderer) { status(""); busy(false); return; }
   let done = 0, failed = false;   // after a failure the error stays, the parts still loading do not overwrite it
   const progress = () => status(`Rendering ${done + 1} of ${jobs.length}…` + (warm ? "" : " (the first time loads the 11 MB renderer)"));
   progress();
   try {
     await Promise.all(jobs.map((j) => loadMesh(j, my).then(() => { done++; if (my === seq && !failed && done < jobs.length) progress(); })));
     if (my !== seq) return;
-    status(""); say("Preview updated.");
+    status(""); busy(false); say("Preview updated.");
     if (!framed) { frame(); framed = true; }
   } catch (e) {
     failed = true;
-    if (my === seq) status(e.message, true);
+    if (my === seq) { status(e.message, true); busy(false); }
   }
 }
 

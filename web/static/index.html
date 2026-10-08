@@ -34,6 +34,17 @@ main { display: grid; grid-template-columns: 1fr; }
 #status { position: absolute; left: 12px; bottom: 36px; padding: 6px 10px; border-radius: 6px; background: var(--panel); font-size: 13px; }
 #status.err { color: var(--err); }
 #status[hidden] { display: none; }
+/* while a change renders: the old model dims and a spinner sits over it */
+#viewer canvas { transition: opacity .15s; }
+#viewer.busy canvas { opacity: .35; }
+#busy { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 10px;
+        padding: 10px 16px; border-radius: 999px; background: var(--panel); box-shadow: 0 2px 12px rgba(0,0,0,.18);
+        font-size: 14px; font-weight: 600; pointer-events: none; }
+#busy[hidden] { display: none; }
+#busy i { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--line); border-top-color: var(--accent);
+          animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #busy i { animation: none; border-color: var(--accent); } }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .no3d-msg { margin: 0; padding: 40px 16px; text-align: center; color: var(--muted); }
 #viewer.no3d .vbtns { display: none; }
@@ -131,6 +142,7 @@ footer a { color: inherit; }
       <label class="pick" id="partner-box"><span id="partner-lbl">Shown in</span><select id="partner"></select></label>
       <button id="b-fit" title="Frame the model">Fit</button>
     </div>
+    <div id="busy" hidden><i></i>Updating preview…</div>
     <div id="status">Loading…</div>
     <div id="say" class="sr" role="status"></div>
   </div>
