@@ -309,6 +309,7 @@ function control(p, group) {
 // any later change closes an Undo offer, so Undo never brings back a kit older than the last edit
 function edited() {
   if ($("toast").querySelector("button")) $("toast").hidden = true;
+  if (syncChoice) syncChoice();
   renderNames(); changed(); saveKit();
   const all = $("reset-all");
   if (all && cur()) all.hidden = !Object.keys(ownParams(cur())).length;
@@ -331,12 +332,15 @@ function refreshVisibility() {
 }
 
 // the editor shows the selected item only. Simple: the main choices. Advanced: every setting.
+const inMode = (params) => params.filter((p) => mode === "advanced" || p.simple);
+let syncChoice = null;   // re-marks the Shape, Fingers or Roller button after a slider moves
 function buildEditor() {
   const box = $("editor"); box.innerHTML = "";
   const it = cur();
+  syncChoice = null;
   if (!it) { box.innerHTML = `<p class="hint">Your kit is empty. Add an insert or a housing above.</p>`; return; }
   if (it.type === "housing") {
-    cat.housing.params.filter((p) => mode === "advanced" || p.simple).forEach((p) => box.append(control(p, cat.housing)));
+    inMode(cat.housing.params).forEach((p) => box.append(control(p, cat.housing)));
   } else buildInsertEditor(box, it);
   // the way between the two modes sits right under the settings
   const more = document.createElement("button");
@@ -364,28 +368,19 @@ function buildInsertEditor(box, it) {
   };
   box.append(optionButtons("Kind", cat.inserts.map((i) => ({
     label: i.name, blurb: i.blurb, active: i.id === it.insertId, pick: () => pickKind(i.id) }))));
-  if (mode === "simple") {
-    const sc = def.simple_choice;
-    if (sc) box.append(optionButtons(sc.label, sc.options.map((o) => ({
-      label: o.label, blurb: o.blurb,
-      // depth and lip radius are only a starting point, the slider changes them without changing the shape
-      active: Object.entries(o.values).every(([k, v]) => k === "slot_d" || k === "grip_r" || it.values[k] === v),
-      pick: () => { Object.assign(cur().values, o.values); buildEditor(); edited(); } }))));
-    def.params.filter((p) => p.simple).forEach((p) => box.append(control(p, def)));
-  } else {
-    // presets as one dropdown, so they do not crowd the page
-    const presets = cat.presets.filter((p) => p.insert === it.insertId);
-    const wrap = document.createElement("div"); wrap.className = "param";
-    wrap.innerHTML = `<label for="p-preset">Start from</label><select id="p-preset"><option value="">Choose a preset…</option>` +
-      presets.map((p, n) => `<option value="${n}">${p.name}</option>`).join("") + "</select>";
-    wrap.querySelector("select").onchange = (e) => {
-      if (e.target.value === "") return;
-      kit.items[kit.sel] = newInsert(it.insertId, presets[Number(e.target.value)].values);
-      buildEditor(); edited();
-    };
-    box.append(wrap);
-    def.params.forEach((p) => box.append(control(p, def)));
+  const sc = def.simple_choice;
+  // depth and lip radius are only a starting point, the slider changes them without changing the shape
+  const on = (o) => Object.entries(o.values).every(([k, v]) => k === "slot_d" || k === "grip_r" || cur().values[k] === v);
+  if (sc) {
+    const w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, active: on(o),
+      pick: () => { Object.assign(cur().values, o.values); buildEditor(); edited(); } })));
+    const bs = w.querySelectorAll(".opts button");
+    syncChoice = () => sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o)));
+    box.append(w);
   }
+  // a choice that the buttons above already set (Unlevel or Straight) is not shown twice
+  const covered = (p) => p.type === "choice" && sc && sc.options.every((o) => p.name in o.values);
+  inMode(def.params).filter((p) => !covered(p)).forEach((p) => box.append(control(p, def)));
   fitPockets();
 }
 

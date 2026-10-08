@@ -1,4 +1,4 @@
-"""What the configurator offers: housings, inserts, their parameters and presets.
+"""What the configurator offers: housings, inserts and their parameters.
 
 Every parameter maps to an OpenSCAD variable in src/. The page only passes parameters
 listed here, and only values inside their range, so a bad value never reaches OpenSCAD.
@@ -128,7 +128,8 @@ INSERTS = [
     },
 ]
 
-# Presets after common commercial edges (Tension Pro Edge: 8, 10, 15, 20, 25 mm, ergo, pocket, mono).
+# Common commercial edges (Tension Pro Edge: 8, 10, 15, 20, 25 mm, ergo, pocket, mono). tools/check_parts.py renders
+# each of them; the page does not show them.
 PRESETS = [
     {"name": "8 mm edge", "insert": "edge", "values": {"slot_d": 8, "grip_r": 1.5}},
     {"name": "10 mm edge", "insert": "edge", "values": {"slot_d": 10, "grip_r": 2}},
@@ -155,7 +156,7 @@ REFS = [{"part": "carabiner", "name": "Carabiner"}]
 
 
 def catalog():
-    return {"housing": HOUSING, "inserts": INSERTS, "presets": PRESETS, "refs": REFS}
+    return {"housing": HOUSING, "inserts": INSERTS, "refs": REFS}
 
 
 def all_params():
