@@ -29,7 +29,7 @@
      }
     ],
     "default": "pyramid",
-    "help": "Every anchor holds the carabiner on the anchor plane, so the edge stays flat.",
+    "help": "Every anchor holds the carabiner right under the grip, so the edge should stay level. Not measured yet.",
     "simple": true
    },
    {
