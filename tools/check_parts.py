@@ -4,8 +4,8 @@ Usage: python3 tools/check_parts.py [-j JOBS]
 
 Cases: every anchor, every preset, and the corners of the edge and pocket ranges in web/catalog.py.
 Checks: one watertight body. Edges and pockets also keep their depth, a floor under the slot that
-does not break into the core, a wall under the size mark, and a wall between the slot end and the
-latch arm. Exits 1 if any check fails.
+does not break into the core, a rail over the slot at the face, a wall under the size mark, and a
+wall between the slot end and the latch arm. Exits 1 if any check fails.
 """
 import argparse
 import itertools
@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "web"))
 import catalog  # noqa: E402
 
 MIN_WALL = 1.5   # thinnest wall a check accepts: under the slot and at the slot ends
+MIN_RAIL = 3     # thinnest rail over the slot at the face: half of rail_t, as an edge's lip round climbs into it
 
 
 def cases():
@@ -112,6 +113,12 @@ def check_slot(mesh, solid, part, params):
         wall = floor - max(z for z in d if z < floor - 0.01)
         if wall < MIN_WALL:
             return problems + [f"floor {wall:.1f} mm at {at}"]
+    # rail: the band over the slot, just behind the face, where the lip or mouth round climbs into it
+    for xp in (x - off, x, x + off):
+        face = hits(mesh, np.array([xp, -5, top - 0.5]), np.array([0, 1, 0]))
+        d = down(mesh, xp, face[0] - 5 + 0.5) if face else []
+        if len(d) > 2 and d[0] - d[1] < MIN_RAIL:
+            return problems + [f"rail {d[0] - d[1]:.1f} mm over the slot at x={xp:.1f}"]
     # front: the size mark is cut 1 mm into the face under the slot; the wall under it is the last one down
     for xf in np.arange(-25, 25.5, 1):
         d = down(mesh, xf, 0.5)
