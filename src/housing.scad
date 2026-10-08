@@ -63,17 +63,19 @@ module anchor_keel() difference() {
     translate([0, grip_y, keel_hz]) rotate([90, 0, 0]) cylinder(d = keel_hole, h = keel_t + 2, center = true, $fn = 64);
 }
 
-// Bar: a steel bolt across the width, through two printed legs. The carabiner hooks over
+// Bar: a steel bolt across the width, through four printed legs. The carabiner hooks over
 // the bolt, right under the anchor plane. A printed bar this long would break; a bolt does not.
+// The inner pair keeps the carabiner in the middle: off-centre, the load would roll the block.
 rod_d = 10;                                  // bolt diameter (M10)
 rod_z = -18;                                 // bolt centre height
-rod_span = 60;                               // distance between the legs
+rod_span = 60;                               // distance between the outer legs
+rod_gap = 14;                                // gap between the inner legs: a 10 to 12 mm carabiner rod with clearance
 rod_leg_t = 10; rod_leg_w = 18;              // leg thickness (across) and width (depth)
 
 module anchor_bar() difference() {
-    for (sx = [-1, 1]) hull() {
-        bar([sx*rod_span/2, grip_y, 3], [sx*rod_span/2, grip_y, rod_z + 2], rod_leg_t, rod_leg_w, 2);
-        translate([sx*rod_span/2, grip_y, rod_z]) rotate([0, 90, 0]) cylinder(d = rod_leg_w, h = rod_leg_t, center = true, $fn = 48);
+    for (x = [rod_span/2, (rod_gap + rod_leg_t)/2], sx = [-1, 1]) hull() {
+        bar([sx*x, grip_y, 3], [sx*x, grip_y, rod_z + 2], rod_leg_t, rod_leg_w, 2);
+        translate([sx*x, grip_y, rod_z]) rotate([0, 90, 0]) cylinder(d = rod_leg_w, h = rod_leg_t, center = true, $fn = 48);
     }
     translate([0, grip_y, rod_z]) rotate([0, 90, 0]) cylinder(d = rod_d + 0.4, h = rod_span + rod_leg_t + 2, center = true, $fn = 48);
 }
