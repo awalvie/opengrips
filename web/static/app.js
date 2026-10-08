@@ -315,9 +315,14 @@ function changed(now) {
   timer = setTimeout(update, now ? 0 : 500);
 }
 
+// our server answers errors in JSON; a proxy in front of it (502, 504) answers in HTML
+async function failure(res) {
+  try { return new Error((await res.json()).error || res.statusText); } catch (e) { return new Error("The server is busy. Try again."); }
+}
+
 async function loadMesh(job, my) {
   const res = await fetch(job.url);
-  if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+  if (!res.ok) throw await failure(res);
   const geo = loader.parse(await res.arrayBuffer());
   if (my !== seq) return;
   geo.computeVertexNormals();
@@ -400,7 +405,7 @@ async function downloadKit() {
   try {
     const res = await fetch("/api/kit", { method: "POST", headers: { "Content-Type": "application/json" },
                                           body: JSON.stringify({ items }) });
-    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+    if (!res.ok) throw await failure(res);
     const a = document.createElement("a");
     a.href = URL.createObjectURL(await res.blob()); a.download = "opengrips-kit.zip";
     document.body.append(a); a.click(); a.remove();
