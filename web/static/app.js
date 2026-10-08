@@ -64,9 +64,12 @@ function frame() {
   controls.update();
 }
 
+// #status shows the progress; screen readers hear only the end of a render (#say), not every step
 function status(text, err) {
   const s = $("status"); s.hidden = !text; s.textContent = text || ""; s.classList.toggle("err", !!err);
+  if (err) say(text);
 }
+function say(text) { $("say").textContent = text; }
 
 // ---------- catalog helpers
 const insertDef = (id) => cat.inserts.find((i) => i.id === id);
@@ -380,7 +383,7 @@ async function update() {
   try {
     await Promise.all(jobs.map((j) => loadMesh(j, my).then(() => { done++; if (my === seq && !failed && done < jobs.length) progress(); })));
     if (my !== seq) return;
-    status("");
+    status(""); say("Preview updated.");
     if (!framed) { frame(); framed = true; }
   } catch (e) {
     failed = true;

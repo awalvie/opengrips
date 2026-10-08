@@ -33,6 +33,7 @@ main { display: grid; grid-template-columns: 1fr; }
 #status { position: absolute; left: 12px; bottom: 36px; padding: 6px 10px; border-radius: 6px; background: var(--panel); font-size: 13px; }
 #status.err { color: var(--err); }
 #status[hidden] { display: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .no3d-msg { margin: 0; padding: 40px 16px; text-align: center; color: var(--muted); }
 #viewer.no3d .vbtns { display: none; }
 .vbtns { position: absolute; right: 10px; top: 10px; left: 10px; display: flex; gap: 6px; justify-content: flex-end; }
@@ -124,12 +125,13 @@ footer a { color: inherit; }
 <header><h1>opengrips</h1><span>no-hang lift block configurator</span></header>
 <main>
   <div id="viewer">
-    <div id="showing" aria-live="polite"></div>
+    <div id="showing"></div>
     <div class="vbtns">
       <label class="pick" id="partner-box"><span id="partner-lbl">Shown in</span><select id="partner"></select></label>
       <button id="b-fit" title="Frame the model">Fit</button>
     </div>
-    <div id="status" role="status" aria-live="polite">Loading…</div>
+    <div id="status">Loading…</div>
+    <div id="say" class="sr" role="status"></div>
   </div>
   <div id="panel">
     <section>
