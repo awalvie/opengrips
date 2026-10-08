@@ -521,7 +521,8 @@ async function update() {
 // ---------- downloads
 function buildDownloads() {
   const dl = $("downloads");
-  dl.innerHTML = kit.items.length ? `<p class="hint">Ticked files go in the zip, the arrow saves one file. PETG, ready to slice.
+  dl.innerHTML = kit.items.length ? `<p class="warn">Not load-tested yet. Check every part before each session, and keep your feet clear of the weight.</p>
+    <p class="hint">Ticked files go in the zip, the arrow saves one file. PETG, ready to slice.
     <a href="https://github.com/awalvie/opengrips/blob/main/PRINTING.md" target="_blank" rel="noopener">Printing guide</a></p>` : "";
   kit.items.forEach((it) => {
     const box = document.createElement("div"); box.className = "ditem";
