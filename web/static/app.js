@@ -145,8 +145,14 @@ function cleanParams(values) {
   return out;
 }
 
-const fileName = (part, params) => [part, ...Object.keys(params).sort().map((k) => k + params[k])]
-  .map((b) => String(b).replaceAll(".", "p")).join("-").slice(0, 120) + ".stl";
+// the file name comes from the item name, so the list shows what lands in the downloads folder.
+// An item with more than one part adds the part name.
+const slug = (s) => s.toLowerCase().replaceAll("×", "x").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+// a second item with the same name gets -2, and so on
+function fileOf(it, p) {
+  const base = slug(nameOf(it)), n = kit.items.slice(0, kit.items.indexOf(it)).filter((x) => slug(nameOf(x)) === base).length;
+  return base + (n ? `-${n + 1}` : "") + (partsOf(it).length > 1 ? "-" + slug(p.name) : "") + ".stl";
+}
 
 const worker = new Worker("render.js", { type: "module" });
 const waiting = {};
@@ -519,13 +525,12 @@ function buildDownloads() {
     <a href="https://github.com/awalvie/opengrips/blob/main/PRINTING.md" target="_blank" rel="noopener">Printing guide</a></p>` : "";
   kit.items.forEach((it) => {
     const box = document.createElement("div"); box.className = "ditem";
-    box.innerHTML = `<h3>${nameOf(it)}</h3>`;
     it.skip = it.skip || {};   // parts left out of the zip, by part name; a plain object so that Copy keeps it
     partsOf(it).forEach((p) => {
       const row = document.createElement("div"); row.className = "dfile";
       row.innerHTML = `<label><input type="checkbox"${it.skip[p.part] ? "" : " checked"}>
-        <span><strong>${p.name}<i>.stl</i></strong><small>${p.settings} · ${p.supports}</small></span></label>
-        <button type="button" title="Download only ${p.name}.stl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></button>`;
+        <span><strong>${fileOf(it, p)}</strong><small>${p.settings} · ${p.supports}</small></span></label>
+        <button type="button" title="Download only ${fileOf(it, p)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></button>`;
       row.querySelector("input").onchange = (e) => { it.skip[p.part] = !e.target.checked; kitButton(); };
       row.querySelector("button").onclick = (e) => downloadPart(p, it, e.currentTarget);
       box.append(row);
@@ -552,10 +557,10 @@ function kitButton() {
 // the button spins and ignores more taps until the file is saved
 async function downloadPart(p, it, b) {
   b.disabled = true; b.classList.add("busy");
-  const no = toast(`Preparing ${p.name}.stl…`, true);
+  const no = toast(`Preparing ${fileOf(it, p)}…`, true);
   try {
     const params = cleanParams(ownParams(it));
-    saveBlob(new Blob([await stl(p.part, params, true)], { type: "model/stl" }), fileName(p.part, params));
+    saveBlob(new Blob([await stl(p.part, params, true)], { type: "model/stl" }), fileOf(it, p));
     hideToast(no);
   } catch (e) {
     toast("The file failed: " + e.message);
@@ -580,16 +585,15 @@ function buildNeed() {
     + (steps.length ? `<strong>Put it together</strong>${list(steps)}` : "") + `</details>`;
 }
 
-// one folder per item, NN-name/part.stl, so equal parts of two items do not overwrite each other
+// NN-file.stl: the item number keeps equal parts of two items apart
 async function downloadKit() {
   const b = $("b-kit");
   zipping = true; b.disabled = true; b.textContent = "Preparing…";
   const no = toast("Preparing the zip. New parts take a moment each.", true);
   try {
     const files = picked().map(({ it, n, p }) => {
-      const folder = String(n + 1).padStart(2, "0") + "-" + nameOf(it).replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
-      const params = cleanParams(ownParams(it));
-      return stl(p.part, params, true).then((data) => ({ name: `${folder}/${p.part}.stl`, data: new Uint8Array(data) }));
+      const name = String(n + 1).padStart(2, "0") + "-" + fileOf(it, p);
+      return stl(p.part, cleanParams(ownParams(it)), true).then((data) => ({ name, data: new Uint8Array(data) }));
     });
     saveBlob(await makeZip(await Promise.all(files)), "opengrips-kit.zip");
     hideToast(no);
