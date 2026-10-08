@@ -23,6 +23,7 @@ button:disabled { opacity: .6; cursor: progress; }
 
 header { padding: 8px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); min-height: 61px; }
 header h1 { font-size: 18px; margin: 0; }
+header img { display: block; border-radius: 7px; }
 header span { color: var(--muted); font-size: 13px; }
 @media (max-width: 480px) { header span { display: none; } }
 
@@ -147,7 +148,7 @@ footer a { color: inherit; }
 </style>
 </head>
 <body>
-<header><h1>opengrips</h1><span>no-hang lift block configurator</span></header>
+<header><img src="icon.svg" width="32" height="32" alt=""><h1>opengrips</h1><span>no-hang lift block configurator</span></header>
 <main>
   <div id="viewer">
     <div id="showing"></div>
