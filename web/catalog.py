@@ -36,7 +36,7 @@ POCKET_SHAPE = [num("slot_d", "Pocket depth", 6, 35, 1, 20, help="From the lip t
 MAX_W = 93
 
 INSERT_SUPPORTS = "supports under the slot floor"
-SOLID = "4 walls · 40% gyroid"
+SOLID = "3 walls · 15% gyroid"
 
 HOUSING = {
     "id": "housing",

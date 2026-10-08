@@ -10,11 +10,11 @@ Print everything in PETG. PLA gets brittle in the cold and slowly bends when it'
 
 | Part | Walls | Infill |
 | --- | --- | --- |
-| Housing, edge and pocket inserts, roller frame | 4 | 40% gyroid |
+| Housing, edge and pocket inserts, roller frame | 3 | 15% gyroid |
 | Roller | 3 | 20% |
 | Printed axle | 4 | 100% |
 
-Use a 0.4 mm nozzle and 0.2 mm layers. These parts take your whole pull, so don't cut walls or infill to save time.
+Use a 0.4 mm nozzle and 0.2 mm layers. These parts take your whole pull, so don't go below these settings to save time.
 
 ## Which way up
 
@@ -48,16 +48,16 @@ I sliced the default parts in PrusaSlicer 2.9.6 with the settings above, PETG at
 
 | Part | Filament |
 | --- | --- |
-| Housing, pyramid anchor | 128 g |
-| Housing, keel anchor | 127 g |
-| Edge insert, 20 mm | 135 g |
-| Pocket insert, three-finger | 149 g |
-| Roller frame | 54 g |
+| Housing, pyramid anchor | 93 g |
+| Housing, keel anchor | 90 g |
+| Edge insert, 20 mm | 87 g |
+| Pocket insert, three-finger | 88 g |
+| Roller frame | 41 g |
 | Roller, unlevel | 25 g |
 | Roller, straight | 30 g |
 | Printed axle | 17 g |
 
-Automatic supports add about 18 g to the pyramid housing and about 6 g to the roller frame. A housing and one edge insert come to about 265 g, so a 1 kg spool gets you a housing and five or six inserts.
+Automatic supports add about 18 g to the pyramid housing and about 6 g to the roller frame. A housing and one edge insert come to about 180 g, so a 1 kg spool gets you a housing and about ten inserts.
 
 ## Checking the fit
 

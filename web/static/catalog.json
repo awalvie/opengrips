@@ -7,7 +7,7 @@
     "part": "housing",
     "name": "Housing",
     "supports": "supports under the anchor",
-    "settings": "4 walls · 40% gyroid"
+    "settings": "3 walls · 15% gyroid"
    }
   ],
   "params": [
@@ -170,7 +170,7 @@
      "part": "insert_edge",
      "name": "Edge insert",
      "supports": "supports under the slot floor",
-     "settings": "4 walls · 40% gyroid"
+     "settings": "3 walls · 15% gyroid"
     }
    ],
    "params": [
@@ -294,7 +294,7 @@
      "part": "insert_pocket",
      "name": "Pocket insert",
      "supports": "supports under the slot floor",
-     "settings": "4 walls · 40% gyroid"
+     "settings": "3 walls · 15% gyroid"
     }
    ],
    "params": [
@@ -425,7 +425,7 @@
      "part": "insert_roller",
      "name": "Roller frame",
      "supports": "supports under the cheeks",
-     "settings": "4 walls · 40% gyroid"
+     "settings": "3 walls · 15% gyroid"
     },
     {
      "part": "roller",

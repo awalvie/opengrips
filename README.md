@@ -31,7 +31,7 @@ Every anchor holds the carabiner right under the grip, so the edge should stay l
 
 ## Printing
 
-Print everything in PETG. The housing goes on its back and the inserts go upside down, and the files you download already sit that way. A housing and one edge insert take about 265 g of filament.
+Print everything in PETG. The housing goes on its back and the inserts go upside down, and the files you download already sit that way. A housing and one edge insert take about 180 g of filament.
 
 The [printing guide](PRINTING.md) has the settings, where the supports go, and how to check the fit.
 
