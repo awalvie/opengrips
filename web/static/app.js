@@ -515,7 +515,7 @@ async function update() {
 // ---------- downloads
 function buildDownloads() {
   const dl = $("downloads");
-  dl.innerHTML = kit.items.length ? `<p class="hint">PETG, ready to slice.
+  dl.innerHTML = kit.items.length ? `<p class="hint">Ticked files go in the zip, the arrow saves one file. PETG, ready to slice.
     <a href="https://github.com/awalvie/opengrips/blob/main/PRINTING.md" target="_blank" rel="noopener">Printing guide</a></p>` : "";
   kit.items.forEach((it) => {
     const box = document.createElement("div"); box.className = "ditem";
@@ -539,13 +539,13 @@ function buildDownloads() {
   buildNeed();
 }
 
-// the ticked files: all of them is the kit, fewer is a count
+// the ticked files: all of them is the whole kit, fewer is a count
 function picked() { return kit.items.flatMap((it, n) => partsOf(it).filter((p) => !it.skip[p.part]).map((p) => ({ it, n, p }))); }
 let zipping = false;
 function kitButton() {
   if (zipping) return;
   const n = picked().length, all = kit.items.reduce((s, it) => s + partsOf(it).length, 0);
-  $("b-kit").textContent = n === all ? "Download kit" : !n ? "No files picked" : `Download ${n} file${n === 1 ? "" : "s"}`;
+  $("b-kit").textContent = n === all ? "Download zip" : !n ? "No files picked" : `Download zip (${n} file${n === 1 ? "" : "s"})`;
   $("b-kit").disabled = !n;
 }
 
