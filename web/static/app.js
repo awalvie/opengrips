@@ -388,11 +388,6 @@ function changed(now) {
   timer = setTimeout(update, now ? 0 : 500);
 }
 
-// our server answers errors in JSON; a proxy in front of it (502, 504) answers in HTML
-async function failure(res) {
-  try { return new Error((await res.json()).error || res.statusText); } catch (e) { return new Error("The server is busy. Try again."); }
-}
-
 async function loadMesh(job, my) {
   const geo = loader.parse(await stl(job.part, job.params));
   if (my !== seq) return;
@@ -500,18 +495,18 @@ function buildNeed() {
   $("need").innerHTML = `<strong>You also need</strong>${list(need)}` + (steps.length ? `<strong>Put it together</strong>${list(steps)}` : "");
 }
 
+// one folder per item, NN-name/part.stl, so equal parts of two items do not overwrite each other
 async function downloadKit() {
-  const items = kit.items.map((it) => ({ name: nameOf(it), parts: partsOf(it).map((p) => p.part), params: ownParams(it) }));
   const b = $("b-kit"), label = b.textContent;
   b.disabled = true; b.textContent = "Preparing…";
-  toast("Preparing the zip. New parts take a few seconds each.");
+  toast("Preparing the zip. New parts take a moment each.");
   try {
-    const res = await fetch("/api/kit", { method: "POST", headers: { "Content-Type": "application/json" },
-                                          body: JSON.stringify({ items }) });
-    if (!res.ok) throw await failure(res);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(await res.blob()); a.download = "opengrips-kit.zip";
-    document.body.append(a); a.click(); a.remove();
+    const files = kit.items.flatMap((it, n) => {
+      const folder = String(n + 1).padStart(2, "0") + "-" + nameOf(it).replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+      const params = cleanParams(ownParams(it));
+      return partsOf(it).map((p) => stl(p.part, params).then((data) => ({ name: `${folder}/${p.part}.stl`, data: new Uint8Array(data) })));
+    });
+    saveBlob(await makeZip(await Promise.all(files)), "opengrips-kit.zip");
     $("toast").hidden = true;
   } catch (e) {
     toast("The zip failed: " + e.message);
