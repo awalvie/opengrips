@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>opengrips Configurator</title>
+<style>
+:root {
+  --bg: #f4f2ee; --panel: #ffffff; --fg: #1d1c1a; --muted: #6b675f; --line: #dedad2;
+  --accent: #3b3790; --accent-fg: #ffffff; --scene: #e6e3dc; --err: #a3271b;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e;
+          --accent: #8f8af0; --accent-fg: #121212; --scene: #262522; --err: #ff8a7a; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+         padding: 8px 12px; min-height: 44px; cursor: pointer; }
+button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+button:disabled { opacity: .6; cursor: progress; }
+
+header { padding: 8px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); }
+header h1 { font-size: 18px; margin: 0; }
+header span { color: var(--muted); font-size: 13px; }
+header .mode { margin-left: auto; display: flex; }
+header .mode button { border-radius: 0; }
+header .mode button:first-child { border-radius: 8px 0 0 8px; }
+header .mode button:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
+@media (max-width: 480px) { header span { display: none; } }
+
+main { display: grid; grid-template-columns: 1fr; }
+#viewer { position: relative; height: 48vh; min-height: 280px; background: var(--scene); }
+#viewer canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+#showing { position: absolute; left: 12px; bottom: 12px; right: 12px; font-size: 13px; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#status { position: absolute; left: 12px; bottom: 36px; padding: 6px 10px; border-radius: 6px; background: var(--panel); font-size: 13px; }
+#status.err { color: var(--err); }
+#status[hidden] { display: none; }
+.vbtns { position: absolute; right: 10px; top: 10px; left: 10px; display: flex; gap: 6px; justify-content: flex-end; }
+
+#panel { padding: 4px 16px 96px; }
+section { border-bottom: 1px solid var(--line); padding: 14px 0; }
+section h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-size: 15px; }
+.hint { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+
+#kit { display: grid; gap: 6px; margin: 6px 0 10px; }
+.card { display: flex; gap: 0; }
+.card button { border-radius: 0; }
+.card .card-main { flex: 1; text-align: left; border-radius: 8px 0 0 8px; padding: 8px 12px; }
+.card .card-main small { display: block; font-size: 12px; opacity: .75; }
+.card .tool { border-left: 0; color: var(--muted); min-width: 52px; }
+.card .tool:last-child { border-radius: 0 8px 8px 0; }
+.card.on .tool { border-color: var(--accent); }
+#editor .more { width: 100%; margin-top: 4px; color: var(--accent); font-weight: 600; }
+.addrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.addrow button { border-style: dashed; font-weight: 600; }
+/* what the 3D view shows the item with: a small label over the value, our own arrow */
+.pick { position: relative; flex: 0 1 260px; min-width: 0; height: 44px; border: 1px solid var(--line);
+        border-radius: 8px; background: var(--panel); }
+.pick[hidden] { display: none; }
+.pick span { position: absolute; left: 12px; top: 5px; font-size: 11px; line-height: 1; color: var(--muted); pointer-events: none; }
+.pick select { appearance: none; -webkit-appearance: none; width: 100%; height: 100%; border: 0; border-radius: 8px;
+               background: transparent; color: var(--fg); font: inherit; font-size: 14px; font-weight: 600;
+               padding: 16px 32px 2px 12px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: pointer; }
+.pick select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pick::after { content: ""; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; pointer-events: none;
+               border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-70%) rotate(45deg); }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.opts { display: grid; gap: 6px; margin-top: 6px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.opts.three { grid-template-columns: repeat(3, 1fr); }
+.opts button { text-align: left; padding: 10px 12px; }
+.opts button strong { display: block; }
+.opts button small { color: var(--muted); }
+.opts button[aria-checked="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.param { margin: 12px 0 16px; }
+.param > label { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 14px; }
+.param output { font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+.slider { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.slider input[type=range] { flex: 1; height: 36px; accent-color: var(--accent); margin: 0; }
+.slider .step { width: 44px; padding: 0; font-size: 20px; line-height: 1; }
+.param select { width: 100%; font: inherit; padding: 10px; min-height: 44px; margin-top: 6px; border-radius: 8px;
+                border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+.param p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+
+.ditem { margin: 10px 0 14px; }
+.ditem h3 { font-size: 14px; margin: 0 0 6px; }
+.ditem a { display: block; text-decoration: none; color: var(--fg); background: var(--panel); border: 1px solid var(--line);
+           border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+.ditem a strong { display: block; }
+.ditem a small { color: var(--muted); }
+#msg { color: var(--err); font-size: 13px; }
+.need { font-size: 13.5px; color: var(--muted); }
+.need ul { padding-left: 18px; margin: 6px 0; }
+
+#bar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 8px; align-items: center; padding: 8px 16px;
+       background: var(--panel); border-top: 1px solid var(--line); z-index: 5; }
+#kit-summary { flex: 1; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes flash { 0%, 40% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.kitem.new button:first-child { animation: flash 1.6s ease-out; }
+#toast { position: fixed; left: 16px; right: 16px; bottom: 70px; z-index: 6; padding: 10px 14px; border-radius: 8px;
+         background: var(--fg); color: var(--bg); font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+#toast[hidden] { display: none; }
+@media (min-width: 900px) { #toast { left: auto; width: 360px; } }
+#b-kit { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+
+@media (min-width: 900px) {
+  main { grid-template-columns: 1fr 400px; height: calc(100vh - 61px); }
+  #viewer { height: calc(100% - 61px); }
+  #panel { overflow-y: auto; border-left: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+<header><h1>opengrips</h1><span>no-hang lift block configurator</span>
+  <div class="mode" role="group" aria-label="Settings">
+    <button id="m-simple" aria-pressed="true">Simple</button><button id="m-adv" aria-pressed="false">Advanced</button>
+  </div>
+</header>
+<main>
+  <div id="viewer">
+    <div id="showing" aria-live="polite"></div>
+    <div class="vbtns">
+      <label class="pick" id="partner-box"><span id="partner-lbl">Shown in</span><select id="partner"></select></label>
+      <button id="b-fit" title="Frame the model">Fit</button>
+    </div>
+    <div id="status" role="status" aria-live="polite">Loading…</div>
+  </div>
+  <div id="panel">
+    <section>
+      <h2>Your kit <span id="kit-count"></span></h2>
+      <p class="hint">Tap an item to see it and change it. Keep only inserts if you already have a housing.</p>
+      <div id="kit"></div>
+      <div class="addrow">
+        <button id="add-ins">+ Insert</button>
+        <button id="add-hou">+ Housing</button>
+      </div>
+    </section>
+    <section id="edit-section">
+      <h2>Change: <b id="edit-title"></b></h2>
+      <div id="editor"></div>
+    </section>
+    <section id="dl-section">
+      <h2>Download</h2>
+      <div id="downloads"></div>
+      <div class="need">
+        <strong>You also need</strong>
+        <ul>
+          <li>A steel screwgate carabiner and a loading pin or sling for the weights.</li>
+          <li>For the roller: a 12 mm steel rod or dowel works as the axle, or print it.</li>
+        </ul>
+        <strong>Put it together</strong>
+        <ul>
+          <li>Roller: drop the roller between the cheeks, push the axle through both cheeks and the roller.</li>
+          <li>Slide the insert into the housing until both side buttons click.</li>
+          <li>To swap: pinch both buttons, pull the insert out by the grip, push the next one in.</li>
+          <li>Clip the carabiner to the anchor under the housing. Check it before every session.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</main>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<div id="bar">
+  <div id="kit-summary"></div>
+  <button id="b-jump" title="Show the single files">Files</button>
+  <button id="b-kit">Download kit</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
