@@ -1,10 +1,10 @@
 # Printing opengrips
 
-These settings are a starting point. They are not load-tested yet: see the status note in the [README](README.md).
+These settings are where I'd start. They aren't load-tested yet, so read the note in the [README](README.md) first.
 
 ## Material
 
-Print every part in **PETG**. PLA is brittle in the cold and creeps when it is warm, for example in a car.
+Print everything in PETG. PLA gets brittle in the cold and slowly bends when it's warm, say in a car on a sunny day.
 
 ## Settings
 
@@ -14,16 +14,16 @@ Print every part in **PETG**. PLA is brittle in the cold and creeps when it is w
 | Roller | 3 | 20% |
 | Printed axle | 4 | 100% |
 
-Nozzle 0.4 mm, layer height 0.2 mm. These parts carry your pull, so do not cut walls or infill to save time.
+Use a 0.4 mm nozzle and 0.2 mm layers. These parts take your whole pull, so don't cut walls or infill to save time.
 
-## Orientation and supports
+## Which way up
 
-Every part has one right way up. It keeps the load along the layers and the grip smooth.
+Each part has one right way up. It keeps the load running along the layers and the grip smooth. The files from the configurator already sit this way, so you only need to slice them.
 
-| Part | How it goes on the bed | Supports |
+| Part | On the bed | Supports |
 | --- | --- | --- |
-| Housing | Back face down, pocket opening up | Automatic, under the anchor |
-| Edge or pocket insert | Upside down, top face down | Under the slot floor only. Block them inside the hollow core: the core roofs bridge. |
+| Housing | On its back, pocket opening up | Automatic, under the anchor |
+| Edge or pocket insert | Upside down, top face down | Only under the slot floor. Block them inside the hollow core, whose roofs are printed as bridges. |
 | Roller frame | Upright, floor down | Under the two cheeks, where the latch arms are cut away |
 | Roller | Standing on one end | None |
 | Printed axle | Lying down | None |
@@ -36,15 +36,15 @@ Every part has one right way up. It keeps the load along the layers and the grip
 | --- | --- | --- |
 | ![Roller frame on the bed](docs/img/print-insert_roller.png) | ![Roller on the bed](docs/img/print-roller.png) | ![Axle on the bed](docs/img/print-axle.png) |
 
-To turn a part to this orientation when you render it yourself, add `-D for_print=true`:
+If you render a part yourself, add `-D for_print=true` to get it the right way up:
 
 ```sh
 openscad -D 'part="housing"' -D for_print=true -o housing.stl opengrips.scad
 ```
 
-## Filament
+## How much filament
 
-PrusaSlicer 2.9.6 with the settings above, PETG at 1.27 g/cm³, default parts, without supports:
+I sliced the default parts in PrusaSlicer 2.9.6 with the settings above, PETG at 1.27 g/cm³, and no supports. Nothing has been weighed after a real print yet.
 
 | Part | Filament |
 | --- | --- |
@@ -58,16 +58,16 @@ PrusaSlicer 2.9.6 with the settings above, PETG at 1.27 g/cm³, default parts, w
 | Roller, straight | 30 g |
 | Printed axle | 17 g |
 
-Automatic supports add about 18 g to the pyramid housing and about 6 g to the roller frame. A housing and one edge insert need about 265 g, so one 1 kg spool makes a housing and five or six inserts.
+Automatic supports add about 18 g to the pyramid housing and about 6 g to the roller frame. A housing and one edge insert come to about 265 g, so a 1 kg spool gets you a housing and five or six inserts.
 
-## Fit check
+## Checking the fit
 
-1. Slide the insert into the housing. Both side buttons must click into their windows.
-2. Pinch both buttons and pull the insert out by the grip. It must come out without force.
-3. If the insert binds, look at the face that was on the bed: a flared first layer ("elephant's foot") is the usual cause. Trim or sand that edge, or turn on elephant-foot compensation in your slicer.
+1. Slide the insert into the housing. Both side buttons should click into their windows.
+2. Pinch both buttons and pull the insert out by the grip. It should come out without a fight.
+3. If it sticks, look at the face that was on the bed. A flared first layer, the "elephant's foot", is the usual cause. Trim or sand that edge, or turn on elephant-foot compensation in your slicer.
 
-## Before the first session
+## Before your first session
 
-- Remove all supports, and check that none are left inside the slot or the latch windows.
-- Look for split layers at the anchor, around the latch arms and at the grip. Do not use a part with a crack.
-- Hang the block from the carabiner and load it slowly, by hand, before you pull hard.
+- Pull out all the supports, and make sure none are left in the slot or the latch windows.
+- Look for split layers at the anchor, around the latch arms and at the grip. Don't use a cracked part.
+- Hang the block from the carabiner and load it slowly by hand before you pull hard.
