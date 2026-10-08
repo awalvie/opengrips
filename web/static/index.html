@@ -117,7 +117,10 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .ditem h3 { font-size: 14px; margin: 0 0 6px; }
 .dfile { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line);
          border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
-.dfile span { flex: 1; min-width: 0; }
+.dfile label { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.dfile input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+.dfile label span { flex: 1; min-width: 0; }
+.dfile input:not(:checked) + span { opacity: .55; }
 .dfile strong { display: block; }
 .dfile strong i { font-style: normal; font-weight: 400; color: var(--muted); }
 .dfile small { display: block; color: var(--muted); font-size: 12.5px; }

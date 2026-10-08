@@ -498,10 +498,13 @@ function buildDownloads() {
   kit.items.forEach((it) => {
     const box = document.createElement("div"); box.className = "ditem";
     box.innerHTML = `<h3>${nameOf(it)}</h3>`;
+    it.skip = it.skip || {};   // parts left out of the zip, by part name; a plain object so that Copy keeps it
     partsOf(it).forEach((p) => {
       const row = document.createElement("div"); row.className = "dfile";
-      row.innerHTML = `<span><strong>${p.name}<i>.stl</i></strong><small>${p.settings} · ${p.supports}</small></span>
-        <button type="button" title="Download ${p.name}.stl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></button>`;
+      row.innerHTML = `<label><input type="checkbox"${it.skip[p.part] ? "" : " checked"}>
+        <span><strong>${p.name}<i>.stl</i></strong><small>${p.settings} · ${p.supports}</small></span></label>
+        <button type="button" title="Download only ${p.name}.stl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></button>`;
+      row.querySelector("input").onchange = (e) => { it.skip[p.part] = !e.target.checked; kitButton(); };
       row.querySelector("button").onclick = () => downloadPart(p, it);
       box.append(row);
     });
@@ -510,8 +513,18 @@ function buildDownloads() {
   const nh = kit.items.filter((x) => x.type === "housing").length, ni = kit.items.length - nh;
   $("kit-summary").textContent = `Kit: ${ni} insert${ni === 1 ? "" : "s"}, ${nh} housing${nh === 1 ? "" : "s"}`;
   $("kit-count").textContent = `(${kit.items.length})`;
-  $("b-kit").disabled = !kit.items.length;
+  kitButton();
   buildNeed();
+}
+
+// the ticked files: all of them is the kit, fewer is a count
+function picked() { return kit.items.flatMap((it, n) => partsOf(it).filter((p) => !it.skip[p.part]).map((p) => ({ it, n, p }))); }
+let zipping = false;
+function kitButton() {
+  if (zipping) return;
+  const n = picked().length, all = kit.items.reduce((s, it) => s + partsOf(it).length, 0);
+  $("b-kit").textContent = n === all ? "Download kit" : !n ? "No files picked" : `Download ${n} file${n === 1 ? "" : "s"}`;
+  $("b-kit").disabled = !n;
 }
 
 async function downloadPart(p, it) {
@@ -543,21 +556,21 @@ function buildNeed() {
 
 // one folder per item, NN-name/part.stl, so equal parts of two items do not overwrite each other
 async function downloadKit() {
-  const b = $("b-kit"), label = b.textContent;
-  b.disabled = true; b.textContent = "Preparing…";
+  const b = $("b-kit");
+  zipping = true; b.disabled = true; b.textContent = "Preparing…";
   toast("Preparing the zip. New parts take a moment each.");
   try {
-    const files = kit.items.flatMap((it, n) => {
+    const files = picked().map(({ it, n, p }) => {
       const folder = String(n + 1).padStart(2, "0") + "-" + nameOf(it).replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
       const params = cleanParams(ownParams(it));
-      return partsOf(it).map((p) => stl(p.part, params, true).then((data) => ({ name: `${folder}/${p.part}.stl`, data: new Uint8Array(data) })));
+      return stl(p.part, params, true).then((data) => ({ name: `${folder}/${p.part}.stl`, data: new Uint8Array(data) }));
     });
     saveBlob(await makeZip(await Promise.all(files)), "opengrips-kit.zip");
     $("toast").hidden = true;
   } catch (e) {
     toast("The zip failed: " + e.message);
   } finally {
-    b.disabled = false; b.textContent = label;
+    zipping = false; kitButton();
   }
 }
 
