@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- opengrips: the housing with its edge slot, the pyramid anchor, and the carabiner under it -->
+  <rect width="64" height="64" rx="14" fill="#3b3790"/>
+  <rect x="9" y="9" width="46" height="22" rx="5" fill="#f4f2ee"/>
+  <rect x="15" y="17" width="34" height="7" rx="2.5" fill="#3b3790"/>
+  <path d="M13 31 L32 44 L51 31" fill="none" stroke="#f4f2ee" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="26.5" y="41" width="11" height="17" rx="5.5" fill="none" stroke="#f4f2ee" stroke-width="3.5"/>
+</svg>
