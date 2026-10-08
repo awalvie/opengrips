@@ -1,0 +1,38 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one deploy at a time; a newer push waits instead of cancelling a deploy half way
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - name: Build the site
+        # the page, plus the OpenSCAD sources at the paths the render worker fetches them from
+        run: |
+          python3 web/catalog.py | diff -u web/static/catalog.json - || { echo "catalog.json is out of date: python3 web/catalog.py > web/static/catalog.json"; exit 1; }
+          mkdir _site
+          cp -r web/static/. _site/
+          cp -r opengrips.scad src _site/
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5
