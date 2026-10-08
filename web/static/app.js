@@ -416,7 +416,9 @@ function select(n) { kit.sel = n; partnerKey = "auto"; buildEditor(); edited(); 
 function addItem(it) {
   kit.items.push(it); kit.sel = kit.items.length - 1; partnerKey = "auto";
   buildEditor(); edited();
-  toast(`Added ${nameOf(it)}. Change it below.`);
+  // phones: the editor is far below the kit list, so go to it
+  if (innerWidth < 900) $("edit-section").scrollIntoView({ behavior: "smooth" });
+  toast(`Added ${nameOf(it)}.`);
 }
 
 function renderKit() {
