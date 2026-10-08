@@ -13,8 +13,12 @@ skin = 2.4;                                  // wall kept around the core
 ins_top = floor_t + pk_h - clear;            // top of the insert
 lip_t = grip_r / tan((90 - edge_angle) / 2);  // how far the lip roundover runs up the face
 // ceiling height at the lip: an incut ceiling rises toward the back, and a big roundover runs up
-// the face, so start lower to keep the rail
-slot_ceil = ins_top - max(rail_t, lip_t + 1) - max(0, slot_d * tan(edge_angle));
+// the face, so start lower to keep the rail. A pocket rounds its whole mouth: that round runs its
+// full radius up the face at any angle, and the full rail stays above it. Where the slot needs the
+// room (steep or deep), the round gives way before the slot height.
+pk_round_room = ins_top - rail_t - abs(slot_d * tan(edge_angle)) - (floor_t + clear + skin) - slot_h;
+slot_ceil = ins_top - max(rail_t + min(grip_r, max(0, pk_round_room)), lip_t + 1) - max(0, slot_d * tan(edge_angle));
+mouth_r = min(grip_r, ins_top - rail_t - slot_ceil);   // pocket mouth round
 slot_zc = slot_ceil - slot_h/2;              // middle of the slot at the lip
 // pocket floor: slot_h of room where the ceiling is lowest, one skin above the insert bottom
 pk_floor = max(floor_t + clear + skin, min(slot_ceil, slot_ceil + slot_d * tan(edge_angle)) - slot_h);
@@ -125,13 +129,13 @@ module slot_straight(w, open_r = 0) {
     }
     if (grip_r <= 0) { }
     else if (open_r <= 0) translate([-w/2, 0, 0]) rotate([90, 0, 90]) linear_extrude(w) lip_round_2d();
-    else {
+    else if (mouth_r > 0) {
         // pockets: round the whole mouth, in thin layers that grow the opening by a quarter circle
-        n = 8;
+        n = 8; r = mouth_r;
         for (i = [0 : n - 1]) {
-            y0 = grip_r * i / n; y1 = grip_r * (i + 1) / n;
-            e0 = grip_r - sqrt(grip_r*grip_r - (grip_r - y0)*(grip_r - y0));
-            e1 = grip_r - sqrt(grip_r*grip_r - (grip_r - y1)*(grip_r - y1));
+            y0 = r * i / n; y1 = r * (i + 1) / n;
+            e0 = r - sqrt(r*r - (r - y0)*(r - y0));
+            e1 = r - sqrt(r*r - (r - y1)*(r - y1));
             hull() {
                 xz(y0 - (i == 0 ? 1 : 0), 0.01 + (i == 0 ? 1 : 0)) translate([0, floor_z]) offset(r = e0) slot_prof(w, h, open_r);
                 xz(y1, 0.01) translate([0, floor_z]) offset(r = e1) slot_prof(w, h, open_r);

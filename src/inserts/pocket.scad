@@ -9,7 +9,7 @@ pocket_r = 8;                                // corner radius of the opening, se
 
 module insert_pocket() {
     span = pocket_n * pocket_w + (pocket_n - 1) * pocket_gap;
-    mouth_z = max(floor_t + clear + skin, pk_floor - grip_r);   // the mouth round reaches grip_r under the floor
+    mouth_z = max(floor_t + clear + skin, pk_floor - mouth_r);  // the mouth round reaches mouth_r under the floor
     difference() {
         insert_blank();
         for (i = [0 : pocket_n - 1])
