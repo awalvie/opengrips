@@ -24,6 +24,9 @@ EDGE_SHAPE = [
     num("slot_h", "Slot height", 16, 30, 1, 22, help="Room for the fingers under the grip, where it is lowest. A steep or deep edge can leave less room, because the insert floor must stay."),
 ]
 
+# Pockets share the edge shape, but their depth is a pocket depth.
+POCKET_SHAPE = [num("slot_d", "Pocket depth", 6, 35, 1, 20, help="From the lip to the back of the pocket.", simple=True)] + EDGE_SHAPE[1:]
+
 CORE = choice("core", "Core", [
     {"value": "truss", "label": "Hollow truss core (less filament)"},
     {"value": "solid", "label": "Solid"},
@@ -96,7 +99,7 @@ INSERTS = [
             num("pocket_w", "Pocket width", 18, MAX_W, 1, 58, help="Mono about 22, two fingers about 40, three fingers about 58."),
             num("pocket_gap", "Wall between", 6, 20, 1, 10),
             num("pocket_r", "Opening corner radius", 2, 11, 0.5, 8, help="Rounding of the pocket opening, seen from the front."),
-        ] + EDGE_SHAPE + [CORE],
+        ] + POCKET_SHAPE + [CORE],
         "max_span": MAX_W,   # pocket_n * pocket_w + (pocket_n - 1) * pocket_gap
     },
     {
