@@ -6,15 +6,20 @@
 <title>opengrips · no-hang lift block configurator</title>
 <meta name="description" content="Build a 3D-printable no-hang lift block with swappable edges, pockets and rollers. Free and open source.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<script>try { const t = localStorage.getItem("opengrips-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) { /* storage blocked */ }</script>
 <style>
 :root {
   --bg: #f4f2ee; --panel: #ffffff; --fg: #1d1c1a; --muted: #6b675f; --line: #dedad2;
   --accent: #3b3790; --accent-fg: #ffffff; --scene: #e6e3dc; --err: #a3271b;
 }
+/* dark follows the system unless the theme button set data-theme */
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e;
+  :root:not([data-theme="light"]) { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e;
           --accent: #8f8af0; --accent-fg: #121212; --scene: #262522; --err: #ff8a7a; color-scheme: dark; }
 }
+:root[data-theme="dark"] { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e;
+          --accent: #8f8af0; --accent-fg: #121212; --scene: #262522; --err: #ff8a7a; color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
 button { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
@@ -27,6 +32,8 @@ header h1 { font-size: 18px; margin: 0; }
 header img { display: block; border-radius: 7px; }
 header span { color: var(--muted); font-size: 13px; }
 @media (max-width: 480px) { header span { display: none; } }
+#theme { margin-left: auto; width: 44px; padding: 0; display: grid; place-items: center; }
+#theme svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
 main { display: grid; grid-template-columns: 1fr; }
 #viewer { position: relative; height: 48vh; min-height: 280px; background: var(--scene); }
@@ -159,7 +166,8 @@ footer a { color: inherit; }
 </style>
 </head>
 <body>
-<header><img src="icon.svg" width="32" height="32" alt=""><h1>opengrips</h1><span>no-hang lift block configurator</span></header>
+<header><img src="icon.svg" width="32" height="32" alt=""><h1>opengrips</h1><span>no-hang lift block configurator</span>
+  <button id="theme" type="button"></button></header>
 <main>
   <div id="viewer">
     <div id="showing"></div>
