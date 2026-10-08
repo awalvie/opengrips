@@ -166,24 +166,5 @@ def all_params():
     return out
 
 
-def params_for(part):
-    """Names of the parameters that shape a part. Inserts also take floor_t, so they line up in the preview."""
-    housing = [p["name"] for p in HOUSING["params"]]
-    if part in {p["part"] for p in HOUSING["parts"]} | {r["part"] for r in REFS}:
-        return set(housing)
-    for ins in INSERTS:
-        if part in {p["part"] for p in ins["parts"]}:
-            return {p["name"] for p in ins["params"]} | {"floor_t"}
-    return set()
-
-
-def part_names():
-    names = {p["part"] for p in HOUSING["parts"]}
-    for ins in INSERTS:
-        names.update(p["part"] for p in ins["parts"])
-    names.update(r["part"] for r in REFS)
-    return names
-
-
 if __name__ == "__main__":
     print(json.dumps(catalog(), indent=1, ensure_ascii=False))
