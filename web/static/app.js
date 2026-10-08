@@ -9,7 +9,7 @@ const LINE = 0x1d1c1a;   // outlines on sharp edges: they make the engraved text
 let cat = null, framed = false, seq = 0;
 let mode = "simple";
 try { mode = localStorage.getItem("opengrips-mode") || "simple"; } catch (e) { /* storage blocked */ }
-const kit = { items: [], sel: 0 };
+const kit = { items: [], sel: 0 };   // items is replaced on Undo, so nothing keeps a reference to it
 const cur = () => kit.items[kit.sel];
 let partnerKey = "auto";   // "none", "auto" (first match in the kit), "kit:<n>" or "std:<anchor>"
 
@@ -300,10 +300,12 @@ function control(p, group) {
   return wrap;
 }
 
+// any later change closes an Undo offer, so Undo never brings back a kit older than the last edit
 function edited() {
+  if ($("toast").querySelector("button")) $("toast").hidden = true;
   renderNames(); changed(); saveKit();
   const all = $("reset-all");
-  if (all && cur()) all.disabled = !Object.keys(ownParams(cur())).length;
+  if (all && cur()) all.hidden = !Object.keys(ownParams(cur())).length;
 }
 
 // pockets: the width slider's maximum follows the count and the wall, so the pockets always fit
@@ -337,18 +339,23 @@ function buildEditor() {
   more.onclick = () => { setMode(mode === "simple" ? "advanced" : "simple"); };
   // every setting back to its default; an insert keeps its kind
   const all = document.createElement("button");
-  all.id = "reset-all"; all.className = "more"; all.textContent = "Reset all to defaults";
-  all.disabled = !Object.keys(ownParams(it)).length;
+  all.id = "reset-all"; all.textContent = "Reset all to defaults";
+  all.hidden = !Object.keys(ownParams(it)).length;
   all.onclick = () => {
+    const done = undoable(`${nameOf(it)}: every setting is back to its default.`);
     kit.items[kit.sel] = it.type === "housing" ? newHousing() : newInsert(it.insertId);
-    buildEditor(); edited(); toast(`${nameOf(cur())}: every setting is back to its default.`);
+    buildEditor(); edited(); done();
   };
   box.append(more, all);
 }
 
 function buildInsertEditor(box, it) {
   const def = insertDef(it.insertId);
-  const pickKind = (id) => { if (id !== cur().insertId) { kit.items[kit.sel] = newInsert(id); buildEditor(); edited(); } };
+  const pickKind = (id) => {
+    if (id === cur().insertId) return;
+    const done = undoable(`${nameOf(cur())} is now ${insertDef(id).name.toLowerCase()}.`);
+    kit.items[kit.sel] = newInsert(id); buildEditor(); edited(); done();
+  };
   box.append(optionButtons("Kind", cat.inserts.map((i) => ({
     label: i.name, blurb: i.blurb, active: i.id === it.insertId, pick: () => pickKind(i.id) }))));
   if (mode === "simple") {
@@ -377,14 +384,26 @@ function buildInsertEditor(box, it) {
 }
 
 // ---------- kit list
-// sticky: the toast stays until the next one or until hideToast(the number toast returned)
+// sticky: the toast stays until the next one or until hideToast(the number toast returned).
+// undo: an Undo button that calls it
 let toastTimer = null, toastNo = 0;
-function toast(text, sticky) {
+function toast(text, sticky, undo) {
   const t = $("toast"); t.textContent = text; t.hidden = false;
-  clearTimeout(toastTimer); if (!sticky) toastTimer = setTimeout(() => { t.hidden = true; }, 3500);
+  if (undo) {
+    const b = document.createElement("button"); b.textContent = "Undo";
+    b.onclick = () => { t.hidden = true; undo(); };
+    t.append(b);
+  }
+  clearTimeout(toastTimer); if (!sticky) toastTimer = setTimeout(() => { t.hidden = true; }, undo ? 6000 : 3500);
   return ++toastNo;
 }
 function hideToast(no) { if (no === toastNo) $("toast").hidden = true; }
+
+// a copy of the kit before a change that loses settings, for Undo
+function undoable(text) {
+  const items = JSON.parse(JSON.stringify(kit.items)), sel = kit.sel;
+  return () => toast(text, false, () => { kit.items = items; kit.sel = sel; partnerKey = "auto"; buildEditor(); edited(); });
+}
 
 function select(n) { kit.sel = n; partnerKey = "auto"; buildEditor(); edited(); }
 
@@ -410,9 +429,10 @@ function renderKit() {
     const rm = document.createElement("button");
     rm.className = "tool"; rm.textContent = "×"; rm.setAttribute("aria-label", `Remove ${nameOf(it)}`);
     rm.onclick = () => {
+      const done = undoable(`Removed ${nameOf(it)}.`);
       kit.items.splice(n, 1);
       kit.sel = Math.max(0, Math.min(kit.sel - (n < kit.sel ? 1 : 0), kit.items.length - 1));
-      partnerKey = "auto"; buildEditor(); edited();
+      partnerKey = "auto"; buildEditor(); edited(); done();
     };
     card.append(main, copy, rm);
     box.append(card);
