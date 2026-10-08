@@ -1,7 +1,7 @@
 """What the configurator offers: housings, inserts, their parameters and presets.
 
-Every parameter maps to an OpenSCAD variable in src/. The server only passes parameters
-listed here, and only values inside their range, so the UI cannot inject code.
+Every parameter maps to an OpenSCAD variable in src/. The page only passes parameters
+listed here, and only values inside their range, so a bad value never reaches OpenSCAD.
 
 The page reads a copy of this as JSON. After a change, write it again:
     python3 web/catalog.py > web/static/catalog.json

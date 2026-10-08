@@ -107,10 +107,69 @@ function ownParams(it) {
   return Object.fromEntries(defOf(it).params.filter((p) => it.values[p.name] !== p.default).map((p) => [p.name, it.values[p.name]]));
 }
 
-function stlUrl(part, it, extra) {
-  const q = new URLSearchParams(Object.assign(ownParams(it), extra || {}));
-  q.set("part", part);
-  return "/api/stl?" + q.toString();
+// ---------- rendering: OpenSCAD runs in a worker (render.js), the STLs stay in memory
+// Known parameters with values inside their range only, so a bad value never reaches OpenSCAD.
+// Defaults are left out, so equal shapes share one cache entry.
+function cleanParams(values) {
+  const out = {};
+  Object.entries(values).forEach(([name, v]) => {
+    const p = spec(name);
+    if (!p) throw new Error(`unknown parameter: ${name}`);
+    if (p.type === "number") {
+      if (typeof v !== "number" || !Number.isFinite(v)) throw new Error(`${name} must be a number`);
+      if (v < p.min || v > p.max) throw new Error(`${name} must be between ${p.min} and ${p.max}`);
+    } else if (!p.options.some((o) => o.value === v)) throw new Error(`${name} has no option ${v}`);
+    if (v !== p.default) out[name] = v;
+  });
+  if (["pocket_n", "pocket_w", "pocket_gap"].some((n) => n in out)) {
+    const def = insertDef("pocket"), q = Object.assign(defaults(def.params), out);
+    if (q.pocket_n * q.pocket_w + (q.pocket_n - 1) * q.pocket_gap > def.max_span)
+      throw new Error("The pockets are wider than the insert. Use fewer or narrower pockets.");
+  }
+  return out;
+}
+
+const fileName = (part, params) => [part, ...Object.keys(params).sort().map((k) => k + params[k])]
+  .map((b) => String(b).replaceAll(".", "p")).join("-").slice(0, 120) + ".stl";
+
+const worker = new Worker("render.js", { type: "module" });
+const waiting = {};
+let jobId = 0, broken = null, warm = false;
+worker.onmessage = ({ data }) => {
+  const w = waiting[data.id]; delete waiting[data.id];
+  if (!w) return;   // already failed by onerror
+  if (data.error) w.reject(new Error(data.error)); else { warm = true; w.resolve(data.stl); }
+};
+// the worker script did not load (an old browser without module workers): every job fails, now and later
+worker.onerror = (e) => {
+  e.preventDefault();
+  broken = new Error("This browser cannot run the 3D renderer. Try a current Firefox, Chrome or Safari.");
+  Object.keys(waiting).forEach((id) => { waiting[id].reject(broken); delete waiting[id]; });
+};
+
+const stls = new Map();   // key: part and clean parameters; value: a promise of the STL bytes
+const KEEP = 60;          // STLs kept, about 0.3 MB each: enough to go back and forth between items
+async function stl(part, params) {
+  const clean = cleanParams(params);
+  if (broken) throw broken;
+  const key = JSON.stringify([part, Object.keys(clean).sort().map((k) => [k, clean[k]])]);
+  let job = stls.get(key);
+  if (!job) {
+    job = new Promise((resolve, reject) => {
+      waiting[++jobId] = { resolve, reject };
+      worker.postMessage({ id: jobId, part, params: clean });
+    }).catch((e) => { if (stls.get(key) === job) stls.delete(key); throw e; });   // a failed render is tried again next time
+  }
+  stls.delete(key); stls.set(key, job);   // the last used goes last, the oldest goes first
+  if (stls.size > KEEP) stls.delete(stls.keys().next().value);
+  return job;
+}
+
+function saveBlob(blob, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
 }
 
 // ---------- fit-check partner: what the selected item is shown with
@@ -335,9 +394,7 @@ async function failure(res) {
 }
 
 async function loadMesh(job, my) {
-  const res = await fetch(job.url);
-  if (!res.ok) throw await failure(res);
-  const geo = loader.parse(await res.arrayBuffer());
+  const geo = loader.parse(await stl(job.part, job.params));
   if (my !== seq) return;
   geo.computeVertexNormals();
   const mat = new THREE.MeshStandardMaterial({ color: COLORS[job.part] || 0x888888, roughness: 0.75,
@@ -366,10 +423,10 @@ async function update() {
     const h = it.type === "housing" ? it : p;
     const ins = it.type === "insert" ? it : p;
     // the insert lines up with the floor of the housing it is shown in
-    if (ins) partsOf(ins).forEach((q) => jobs.push({ part: q.part, url: stlUrl(q.part, ins, h ? { floor_t: h.values.floor_t } : {}) }));
+    if (ins) partsOf(ins).forEach((q) => jobs.push({ part: q.part, params: Object.assign(ownParams(ins), h ? { floor_t: h.values.floor_t } : {}) }));
     if (h) {
-      jobs.push({ part: "housing", url: stlUrl("housing", h), ghost: it.type === "insert" });   // see-through around an insert
-      jobs.push({ part: "carabiner", url: stlUrl("carabiner", h) });
+      jobs.push({ part: "housing", params: ownParams(h), ghost: it.type === "insert" });   // see-through around an insert
+      jobs.push({ part: "carabiner", params: ownParams(h) });
     }
   }
   const keep = jobs.map((j) => j.part);
@@ -378,7 +435,7 @@ async function update() {
   });
   if (!jobs.length || !renderer) { status(""); return; }
   let done = 0, failed = false;   // after a failure the error stays, the parts still loading do not overwrite it
-  const progress = () => status(`Rendering ${done + 1} of ${jobs.length}… (a new housing takes about 10 s)`);
+  const progress = () => status(`Rendering ${done + 1} of ${jobs.length}…` + (warm ? "" : " (the first time loads the 11 MB renderer)"));
   progress();
   try {
     await Promise.all(jobs.map((j) => loadMesh(j, my).then(() => { done++; if (my === seq && !failed && done < jobs.length) progress(); })));
@@ -399,8 +456,9 @@ function buildDownloads() {
     box.innerHTML = `<h3>${nameOf(it)}</h3>`;
     partsOf(it).forEach((p) => {
       const a = document.createElement("a");
-      a.href = stlUrl(p.part, it, { download: 1 });
+      a.href = "#";
       a.innerHTML = `<strong>${p.name}.stl</strong><small>${p.print}</small>`;
+      a.onclick = (e) => { e.preventDefault(); downloadPart(p, it); };
       box.append(a);
     });
     dl.append(box);
@@ -410,6 +468,17 @@ function buildDownloads() {
   $("kit-count").textContent = `(${kit.items.length})`;
   $("b-kit").disabled = !kit.items.length;
   buildNeed();
+}
+
+async function downloadPart(p, it) {
+  toast(`Preparing ${p.name}.stl…`);
+  try {
+    const params = cleanParams(ownParams(it));
+    saveBlob(new Blob([await stl(p.part, params)], { type: "model/stl" }), fileName(p.part, params));
+    $("toast").hidden = true;
+  } catch (e) {
+    toast("The file failed: " + e.message);
+  }
 }
 
 // the hardware and the steps for the parts in the kit only

@@ -12,13 +12,14 @@ import importlib
 import io
 import json
 import pathlib
+import posixpath
 import re
 import subprocess
 import threading
 import zipfile
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 import catalog
 
@@ -109,8 +110,17 @@ def file_name(part, params):
 
 
 class Handler(SimpleHTTPRequestHandler):
+    extensions_map = {**SimpleHTTPRequestHandler.extensions_map,
+                      ".wasm": "application/wasm", ".js": "text/javascript", ".mjs": "text/javascript", ".scad": "text/plain"}
+
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(STATIC), **kw)
+
+    def translate_path(self, path):
+        # the render worker reads the OpenSCAD sources next to the page, where the Pages deploy puts them
+        p = posixpath.normpath(unquote(urlparse(path).path))
+        self.directory = str(ROOT if p == "/opengrips.scad" or p.startswith("/src/") else STATIC)
+        return super().translate_path(path)
 
     def send_json(self, obj, status=HTTPStatus.OK):
         body = json.dumps(obj).encode()
