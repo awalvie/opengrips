@@ -134,6 +134,10 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .dfile button { flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; display: grid; place-items: center; }
 .dfile button svg { width: 34px; height: 34px; padding: 7px; border-radius: 50%; background: var(--accent);
                     stroke: var(--accent-fg); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.dfile button.busy svg { visibility: hidden; }
+.dfile button.busy::after { content: ""; position: absolute; inset: 0; margin: auto; width: 22px; height: 22px; border-radius: 50%;
+                            border: 3px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+.dfile button { position: relative; }
 #msg { color: var(--err); font-size: 13px; }
 .need { font-size: 13.5px; color: var(--muted); }
 .need ul { padding-left: 18px; margin: 6px 0; }

@@ -377,11 +377,14 @@ function buildInsertEditor(box, it) {
 }
 
 // ---------- kit list
-let toastTimer = null;
-function toast(text) {
+// sticky: the toast stays until the next one or until hideToast(the number toast returned)
+let toastTimer = null, toastNo = 0;
+function toast(text, sticky) {
   const t = $("toast"); t.textContent = text; t.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3500);
+  clearTimeout(toastTimer); if (!sticky) toastTimer = setTimeout(() => { t.hidden = true; }, 3500);
+  return ++toastNo;
 }
+function hideToast(no) { if (no === toastNo) $("toast").hidden = true; }
 
 function select(n) { kit.sel = n; partnerKey = "auto"; buildEditor(); edited(); }
 
@@ -504,7 +507,7 @@ function buildDownloads() {
         <span><strong>${p.name}<i>.stl</i></strong><small>${p.settings} · ${p.supports}</small></span></label>
         <button type="button" title="Download only ${p.name}.stl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></button>`;
       row.querySelector("input").onchange = (e) => { it.skip[p.part] = !e.target.checked; kitButton(); };
-      row.querySelector("button").onclick = () => downloadPart(p, it);
+      row.querySelector("button").onclick = (e) => downloadPart(p, it, e.currentTarget);
       box.append(row);
     });
     dl.append(box);
@@ -526,14 +529,18 @@ function kitButton() {
   $("b-kit").disabled = !n;
 }
 
-async function downloadPart(p, it) {
-  toast(`Preparing ${p.name}.stl…`);
+// the button spins and ignores more taps until the file is saved
+async function downloadPart(p, it, b) {
+  b.disabled = true; b.classList.add("busy");
+  const no = toast(`Preparing ${p.name}.stl…`, true);
   try {
     const params = cleanParams(ownParams(it));
     saveBlob(new Blob([await stl(p.part, params, true)], { type: "model/stl" }), fileName(p.part, params));
-    $("toast").hidden = true;
+    hideToast(no);
   } catch (e) {
     toast("The file failed: " + e.message);
+  } finally {
+    b.disabled = false; b.classList.remove("busy");
   }
 }
 
@@ -557,7 +564,7 @@ function buildNeed() {
 async function downloadKit() {
   const b = $("b-kit");
   zipping = true; b.disabled = true; b.textContent = "Preparing…";
-  toast("Preparing the zip. New parts take a moment each.");
+  const no = toast("Preparing the zip. New parts take a moment each.", true);
   try {
     const files = picked().map(({ it, n, p }) => {
       const folder = String(n + 1).padStart(2, "0") + "-" + nameOf(it).replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
@@ -565,7 +572,7 @@ async function downloadKit() {
       return stl(p.part, params, true).then((data) => ({ name: `${folder}/${p.part}.stl`, data: new Uint8Array(data) }));
     });
     saveBlob(await makeZip(await Promise.all(files)), "opengrips-kit.zip");
-    $("toast").hidden = true;
+    hideToast(no);
   } catch (e) {
     toast("The zip failed: " + e.message);
   } finally {
