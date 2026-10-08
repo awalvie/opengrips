@@ -23,9 +23,17 @@ function sceneColor() {
   scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--scene").trim());
 }
 
+// the "Shown in" picker and Fit sit over the top of the view; on a short phone view they would
+// cover the model, so the view is centred in the space under them and frame() fits the model there
+function overlay() {
+  const vb = viewer.querySelector(".vbtns");
+  return vb.offsetTop + vb.offsetHeight + 6;
+}
+
 function resize() {
   const w = viewer.clientWidth, h = viewer.clientHeight;
-  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  camera.setViewOffset(w, h, 0, -overlay() / 2, w, h);   // also updates the projection
 }
 
 try {
@@ -57,8 +65,8 @@ function frame() {
   Object.values(meshes).forEach((m) => box.expandByObject(m));
   if (box.isEmpty()) return;
   const c = box.getCenter(new THREE.Vector3()), r = box.getSize(new THREE.Vector3()).length() / 2;
-  const vfov = (camera.fov * Math.PI) / 180, hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
-  const d = r / Math.tan(Math.min(vfov, hfov) / 2) * 1.05;   // narrow phone screens: the width limits
+  const t = Math.tan((camera.fov * Math.PI) / 360), free = 1 - overlay() / viewer.clientHeight;
+  const d = r / Math.min(t * free, t * camera.aspect) * 1.05;   // narrow phone screens: the width limits
   controls.target.copy(c);
   camera.position.copy(c).add(new THREE.Vector3(0.75, 0.55, 1.2).normalize().multiplyScalar(d));
   controls.update();
