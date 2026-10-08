@@ -14,33 +14,43 @@ const cur = () => kit.items[kit.sel];
 let partnerKey = "auto";   // "none", "auto" (first match in the kit), "kit:<n>" or "std:<anchor>"
 
 // ---------- scene
+// without WebGL or three.js the page still works: the kit, the editor and the downloads need no 3D
 const viewer = $("viewer");
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-viewer.prepend(renderer.domElement);
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(35, 1, 1, 5000);
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-scene.add(new THREE.HemisphereLight(0xffffff, 0x6f6a60, 0.55));
-const sun = new THREE.DirectionalLight(0xffffff, 0.95); sun.position.set(200, 400, 300); scene.add(sun);
-const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-300, 100, -200); scene.add(fill);
-const model = new THREE.Group(); model.rotation.x = -Math.PI / 2; scene.add(model);   // OpenSCAD Z-up to three Y-up
-const loader = new THREE.STLLoader();
 const meshes = {};
+let renderer = null, scene, camera, controls, model, loader;
 
 function sceneColor() {
   scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--scene").trim());
 }
-sceneColor();
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", sceneColor);
 
 function resize() {
   const w = viewer.clientWidth, h = viewer.clientHeight;
   renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
 }
-new ResizeObserver(resize).observe(viewer);
-(function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
+
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  viewer.prepend(renderer.domElement);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(35, 1, 1, 5000);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x6f6a60, 0.55));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.95); sun.position.set(200, 400, 300); scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-300, 100, -200); scene.add(fill);
+  model = new THREE.Group(); model.rotation.x = -Math.PI / 2; scene.add(model);   // OpenSCAD Z-up to three Y-up
+  loader = new THREE.STLLoader();
+  sceneColor();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", sceneColor);
+  new ResizeObserver(resize).observe(viewer);
+  (function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
+} catch (e) {
+  if (renderer) renderer.domElement.remove();
+  renderer = null;
+  viewer.classList.add("no3d");
+  viewer.insertAdjacentHTML("afterbegin", `<p class="no3d-msg">3D preview unavailable. You can still build your kit and download it.</p>`);
+}
 
 function frame() {
   const box = new THREE.Box3();
@@ -362,7 +372,7 @@ async function update() {
   Object.keys(meshes).forEach((k) => {
     if (!keep.includes(k)) drop(k);
   });
-  if (!jobs.length) { status(""); return; }
+  if (!jobs.length || !renderer) { status(""); return; }
   let done = 0, failed = false;   // after a failure the error stays, the parts still loading do not overwrite it
   const progress = () => status(`Rendering ${done + 1} of ${jobs.length}… (a new housing takes about 10 s)`);
   progress();
