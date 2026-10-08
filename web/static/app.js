@@ -248,7 +248,8 @@ function buildInsertEditor(box, it) {
     const sc = def.simple_choice;
     if (sc) box.append(optionButtons(sc.label, sc.options.map((o) => ({
       label: o.label, blurb: o.blurb,
-      active: Object.entries(o.values).every(([k, v]) => it.values[k] === v),
+      // depth and lip radius are only a starting point, the slider changes them without changing the shape
+      active: Object.entries(o.values).every(([k, v]) => k === "slot_d" || k === "grip_r" || it.values[k] === v),
       pick: () => { Object.assign(cur().values, o.values); buildEditor(); edited(); } }))));
     def.params.filter((p) => p.simple).forEach((p) => box.append(control(p, def)));
   } else {
