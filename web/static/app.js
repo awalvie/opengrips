@@ -465,7 +465,7 @@ function setMode(m) {
   if (cat) buildEditor();
 }
 
-fetch("/api/catalog").then((r) => r.json()).then((c) => {
+fetch("catalog.json").then((r) => r.json()).then((c) => {
   cat = c;
   kit.items.push(newInsert("edge"), newHousing());
   setMode(mode); renderNames(); update();

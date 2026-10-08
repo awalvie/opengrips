@@ -2,7 +2,11 @@
 
 Every parameter maps to an OpenSCAD variable in src/. The server only passes parameters
 listed here, and only values inside their range, so the UI cannot inject code.
+
+The page reads a copy of this as JSON. After a change, write it again:
+    python3 web/catalog.py > web/static/catalog.json
 """
+import json
 
 
 # simple=True: also shown in Simple mode. Everything else is only in Advanced mode.
@@ -179,3 +183,7 @@ def part_names():
         names.update(p["part"] for p in ins["parts"])
     names.update(r["part"] for r in REFS)
     return names
+
+
+if __name__ == "__main__":
+    print(json.dumps(catalog(), indent=1, ensure_ascii=False))

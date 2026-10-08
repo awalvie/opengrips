@@ -9,6 +9,7 @@ wall between the slot end and the latch arm. Exits 1 if any check fails.
 """
 import argparse
 import itertools
+import json
 import pathlib
 import subprocess
 import sys
@@ -151,6 +152,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-j", "--jobs", type=int, default=8)
     a = ap.parse_args()
+    if json.loads((ROOT / "web/static/catalog.json").read_text()) != json.loads(json.dumps(catalog.catalog())):
+        sys.exit("web/static/catalog.json is out of date: python3 web/catalog.py > web/static/catalog.json")
     todo = cases()
     failed = 0
     with tempfile.TemporaryDirectory() as tmp, ThreadPoolExecutor(a.jobs) as pool:

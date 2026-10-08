@@ -1,0 +1,689 @@
+{
+ "housing": {
+  "id": "housing",
+  "name": "Housing",
+  "parts": [
+   {
+    "part": "housing",
+    "name": "Housing",
+    "print": "Print with the back face on the bed, pocket opening up, so the load runs along the layers. Needs some supports. 4 walls, 40% infill. PETG only: PLA is brittle in the cold and creeps when warm."
+   }
+  ],
+  "params": [
+   {
+    "name": "anchor",
+    "label": "Anchor",
+    "type": "choice",
+    "options": [
+     {
+      "value": "pyramid",
+      "label": "Pyramid (four bars to a point)"
+     },
+     {
+      "value": "keel",
+      "label": "Keel (plate with a hole)"
+     },
+     {
+      "value": "bar",
+      "label": "Bolt (steel bolt through four legs)"
+     }
+    ],
+    "default": "pyramid",
+    "help": "Every anchor holds the carabiner on the anchor plane, so the edge stays flat.",
+    "simple": true
+   },
+   {
+    "name": "bar_angle",
+    "label": "Bar angle",
+    "type": "number",
+    "min": 20,
+    "max": 40,
+    "step": 1,
+    "default": 25,
+    "unit": "°",
+    "help": "How steep the pyramid bars rise.",
+    "simple": false
+   },
+   {
+    "name": "keel_hole",
+    "label": "Hole size",
+    "type": "number",
+    "min": 13,
+    "max": 20,
+    "step": 0.5,
+    "default": 16,
+    "unit": "mm",
+    "help": "Carabiner hole diameter in the keel.",
+    "simple": false
+   },
+   {
+    "name": "rod_d",
+    "label": "Bolt diameter",
+    "type": "number",
+    "min": 8,
+    "max": 12,
+    "step": 1,
+    "default": 10,
+    "unit": "mm",
+    "help": "A steel bolt and nut this thick, at least 90 mm long. It must fit your carabiner.",
+    "simple": false
+   },
+   {
+    "name": "style",
+    "label": "Look",
+    "type": "choice",
+    "options": [
+     {
+      "value": "truss",
+      "label": "Truss windows (lighter)"
+     },
+     {
+      "value": "solid",
+      "label": "Solid walls"
+     }
+    ],
+    "default": "truss",
+    "help": "Triangle windows in the back wall.",
+    "simple": false
+   },
+   {
+    "name": "top_t",
+    "label": "Top wall",
+    "type": "number",
+    "min": 6,
+    "max": 12,
+    "step": 0.5,
+    "default": 8,
+    "unit": "mm",
+    "help": "The insert presses up on it. Thicker is stiffer and heavier.",
+    "simple": false
+   },
+   {
+    "name": "floor_t",
+    "label": "Floor",
+    "type": "number",
+    "min": 8,
+    "max": 12,
+    "step": 0.5,
+    "default": 8,
+    "unit": "mm",
+    "help": "Ties the anchor to the walls.",
+    "simple": false
+   },
+   {
+    "name": "corner",
+    "label": "Corner radius",
+    "type": "number",
+    "min": 3,
+    "max": 12,
+    "step": 0.5,
+    "default": 6,
+    "unit": "mm",
+    "help": "Rounding of the housing corners, seen from the front.",
+    "simple": false
+   }
+  ],
+  "show_if": {
+   "bar_angle": [
+    "anchor",
+    "pyramid"
+   ],
+   "keel_hole": [
+    "anchor",
+    "keel"
+   ],
+   "rod_d": [
+    "anchor",
+    "bar"
+   ]
+  }
+ },
+ "inserts": [
+  {
+   "id": "edge",
+   "name": "Edge",
+   "blurb": "flat, ergo, incut or sloper",
+   "simple_choice": {
+    "label": "Shape",
+    "options": [
+     {
+      "label": "Flat",
+      "blurb": "classic edge",
+      "values": {
+       "edge_angle": 0,
+       "ergo": 0,
+       "grip_r": 3
+      }
+     },
+     {
+      "label": "Ergo",
+      "blurb": "curved for longer middle fingers",
+      "values": {
+       "edge_angle": 0,
+       "ergo": 5,
+       "grip_r": 4
+      }
+     },
+     {
+      "label": "Incut",
+      "blurb": "tilts in 10°, better traction",
+      "values": {
+       "edge_angle": 10,
+       "ergo": 0,
+       "grip_r": 2.5
+      }
+     },
+     {
+      "label": "Sloper",
+      "blurb": "round 35° curve, open hand",
+      "values": {
+       "edge_angle": -35,
+       "ergo": 0,
+       "slot_d": 25
+      }
+     }
+    ]
+   },
+   "parts": [
+    {
+     "part": "insert_edge",
+     "name": "Edge insert",
+     "print": "Print upside down, top face on the bed: the grip comes out smooth. Supports only under the slot floor."
+    }
+   ],
+   "params": [
+    {
+     "name": "slot_d",
+     "label": "Edge depth",
+     "type": "number",
+     "min": 6,
+     "max": 35,
+     "step": 1,
+     "default": 20,
+     "unit": "mm",
+     "help": "From the lip to the back of the slot.",
+     "simple": true
+    },
+    {
+     "name": "grip_r",
+     "label": "Lip radius",
+     "type": "number",
+     "min": 0.5,
+     "max": 12,
+     "step": 0.5,
+     "default": 3,
+     "unit": "mm",
+     "help": "Roundover on the lip. Small is sharp, big is friendly. Slopers have no lip.",
+     "simple": false
+    },
+    {
+     "name": "edge_angle",
+     "label": "Edge angle",
+     "type": "number",
+     "min": -45,
+     "max": 20,
+     "step": 1,
+     "default": 0,
+     "unit": "°",
+     "help": "Positive: incut, the grip tilts in for traction (Tension uses 10°). Negative: sloper, one round curve (20° to 45°).",
+     "simple": false
+    },
+    {
+     "name": "slot_h",
+     "label": "Slot height",
+     "type": "number",
+     "min": 16,
+     "max": 30,
+     "step": 1,
+     "default": 22,
+     "unit": "mm",
+     "help": "Room for the fingers under the grip, where it is lowest. A steep or deep edge can leave less room, because the insert floor must stay.",
+     "simple": false
+    },
+    {
+     "name": "core",
+     "label": "Core",
+     "type": "choice",
+     "options": [
+      {
+       "value": "truss",
+       "label": "Hollow truss core (less filament)"
+      },
+      {
+       "value": "solid",
+       "label": "Solid"
+      }
+     ],
+     "default": "truss",
+     "help": "Triangle cavities inside, open at the back. The grip and the latch keep full walls.",
+     "simple": false
+    },
+    {
+     "name": "slot_w",
+     "label": "Edge width",
+     "type": "number",
+     "min": 40,
+     "max": 93,
+     "step": 1,
+     "default": 92,
+     "unit": "mm",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "ergo",
+     "label": "Ergo curve",
+     "type": "number",
+     "min": 0,
+     "max": 8,
+     "step": 0.5,
+     "default": 0,
+     "unit": "mm",
+     "help": "The lip curves this far back in the middle for the longer middle fingers. The middle gets deeper, the ends shallower and rounder.",
+     "simple": false
+    }
+   ]
+  },
+  {
+   "id": "pocket",
+   "name": "Pockets",
+   "blurb": "mono to three fingers",
+   "simple_choice": {
+    "label": "Fingers",
+    "options": [
+     {
+      "label": "Mono",
+      "blurb": "one finger",
+      "values": {
+       "pocket_n": 1,
+       "pocket_w": 22
+      }
+     },
+     {
+      "label": "Two",
+      "blurb": "two fingers",
+      "values": {
+       "pocket_n": 1,
+       "pocket_w": 40
+      }
+     },
+     {
+      "label": "Three",
+      "blurb": "three fingers",
+      "values": {
+       "pocket_n": 1,
+       "pocket_w": 58
+      }
+     },
+     {
+      "label": "Two pairs",
+      "blurb": "two 2-finger pockets",
+      "values": {
+       "pocket_n": 2,
+       "pocket_w": 40
+      }
+     }
+    ]
+   },
+   "parts": [
+    {
+     "part": "insert_pocket",
+     "name": "Pocket insert",
+     "print": "Print upside down, top face on the bed: the grip comes out smooth. Supports only under the slot floor."
+    }
+   ],
+   "params": [
+    {
+     "name": "pocket_n",
+     "label": "Pockets",
+     "type": "number",
+     "min": 1,
+     "max": 3,
+     "step": 1,
+     "default": 1,
+     "unit": "",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "pocket_w",
+     "label": "Pocket width",
+     "type": "number",
+     "min": 18,
+     "max": 93,
+     "step": 1,
+     "default": 58,
+     "unit": "mm",
+     "help": "Mono about 22, two fingers about 40, three fingers about 58.",
+     "simple": false
+    },
+    {
+     "name": "pocket_gap",
+     "label": "Wall between",
+     "type": "number",
+     "min": 6,
+     "max": 20,
+     "step": 1,
+     "default": 10,
+     "unit": "mm",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "pocket_r",
+     "label": "Opening corner radius",
+     "type": "number",
+     "min": 2,
+     "max": 11,
+     "step": 0.5,
+     "default": 8,
+     "unit": "mm",
+     "help": "Rounding of the pocket opening, seen from the front.",
+     "simple": false
+    },
+    {
+     "name": "slot_d",
+     "label": "Pocket depth",
+     "type": "number",
+     "min": 6,
+     "max": 35,
+     "step": 1,
+     "default": 20,
+     "unit": "mm",
+     "help": "From the lip to the back of the pocket.",
+     "simple": true
+    },
+    {
+     "name": "grip_r",
+     "label": "Lip radius",
+     "type": "number",
+     "min": 0.5,
+     "max": 12,
+     "step": 0.5,
+     "default": 3,
+     "unit": "mm",
+     "help": "Roundover on the lip. Small is sharp, big is friendly. Slopers have no lip.",
+     "simple": false
+    },
+    {
+     "name": "edge_angle",
+     "label": "Edge angle",
+     "type": "number",
+     "min": -45,
+     "max": 20,
+     "step": 1,
+     "default": 0,
+     "unit": "°",
+     "help": "Positive: incut, the grip tilts in for traction (Tension uses 10°). Negative: sloper, one round curve (20° to 45°).",
+     "simple": false
+    },
+    {
+     "name": "slot_h",
+     "label": "Slot height",
+     "type": "number",
+     "min": 16,
+     "max": 30,
+     "step": 1,
+     "default": 22,
+     "unit": "mm",
+     "help": "Room for the fingers under the grip, where it is lowest. A steep or deep edge can leave less room, because the insert floor must stay.",
+     "simple": false
+    },
+    {
+     "name": "core",
+     "label": "Core",
+     "type": "choice",
+     "options": [
+      {
+       "value": "truss",
+       "label": "Hollow truss core (less filament)"
+      },
+      {
+       "value": "solid",
+       "label": "Solid"
+      }
+     ],
+     "default": "truss",
+     "help": "Triangle cavities inside, open at the back. The grip and the latch keep full walls.",
+     "simple": false
+    }
+   ],
+   "max_span": 93
+  },
+  {
+   "id": "roller",
+   "name": "Roller",
+   "blurb": "unlevel or straight",
+   "simple_choice": {
+    "label": "Roller",
+    "options": [
+     {
+      "label": "Unlevel",
+      "blurb": "necks near the ends",
+      "values": {
+       "roll_type": "unlevel"
+      }
+     },
+     {
+      "label": "Straight",
+      "blurb": "plain cylinder",
+      "values": {
+       "roll_type": "straight"
+      }
+     }
+    ]
+   },
+   "parts": [
+    {
+     "part": "insert_roller",
+     "name": "Roller frame",
+     "print": "Print upright, floor on the bed. Supports under the cheeks, where the latch arms are cut away."
+    },
+    {
+     "part": "roller",
+     "name": "Roller",
+     "print": "Print standing on one end. No supports."
+    },
+    {
+     "part": "axle",
+     "name": "Axle",
+     "print": "Use a 12 mm steel rod or dowel, or print it lying down."
+    }
+   ],
+   "params": [
+    {
+     "name": "roll_type",
+     "label": "Roller",
+     "type": "choice",
+     "options": [
+      {
+       "value": "unlevel",
+       "label": "Unlevel (necks near the ends)"
+      },
+      {
+       "value": "straight",
+       "label": "Straight"
+      }
+     ],
+     "default": "unlevel",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "roll_d",
+     "label": "Diameter",
+     "type": "number",
+     "min": 24,
+     "max": 32,
+     "step": 1,
+     "default": 28,
+     "unit": "mm",
+     "help": "",
+     "simple": false
+    }
+   ]
+  }
+ ],
+ "presets": [
+  {
+   "name": "8 mm edge",
+   "insert": "edge",
+   "values": {
+    "slot_d": 8,
+    "grip_r": 1.5
+   }
+  },
+  {
+   "name": "10 mm edge",
+   "insert": "edge",
+   "values": {
+    "slot_d": 10,
+    "grip_r": 2
+   }
+  },
+  {
+   "name": "15 mm edge",
+   "insert": "edge",
+   "values": {
+    "slot_d": 15,
+    "grip_r": 3
+   }
+  },
+  {
+   "name": "20 mm edge",
+   "insert": "edge",
+   "values": {
+    "slot_d": 20,
+    "grip_r": 3
+   }
+  },
+  {
+   "name": "25 mm edge",
+   "insert": "edge",
+   "values": {
+    "slot_d": 25,
+    "grip_r": 4
+   }
+  },
+  {
+   "name": "20 mm ergo",
+   "insert": "edge",
+   "values": {
+    "slot_d": 20,
+    "grip_r": 4,
+    "ergo": 5
+   }
+  },
+  {
+   "name": "25 mm ergo",
+   "insert": "edge",
+   "values": {
+    "slot_d": 25,
+    "grip_r": 5,
+    "ergo": 6
+   }
+  },
+  {
+   "name": "15 mm incut 10°",
+   "insert": "edge",
+   "values": {
+    "slot_d": 15,
+    "grip_r": 2,
+    "edge_angle": 10
+   }
+  },
+  {
+   "name": "20 mm incut 10°",
+   "insert": "edge",
+   "values": {
+    "slot_d": 20,
+    "grip_r": 3,
+    "edge_angle": 10
+   }
+  },
+  {
+   "name": "20° sloper",
+   "insert": "edge",
+   "values": {
+    "slot_d": 30,
+    "edge_angle": -20
+   }
+  },
+  {
+   "name": "35° sloper",
+   "insert": "edge",
+   "values": {
+    "slot_d": 25,
+    "edge_angle": -35
+   }
+  },
+  {
+   "name": "45° sloper",
+   "insert": "edge",
+   "values": {
+    "slot_d": 20,
+    "edge_angle": -45,
+    "slot_h": 18
+   }
+  },
+  {
+   "name": "25 mm three-finger pocket",
+   "insert": "pocket",
+   "values": {
+    "slot_d": 25,
+    "pocket_n": 1,
+    "pocket_w": 58
+   }
+  },
+  {
+   "name": "25 mm two-finger pocket",
+   "insert": "pocket",
+   "values": {
+    "slot_d": 25,
+    "pocket_n": 1,
+    "pocket_w": 40
+   }
+  },
+  {
+   "name": "25 mm mono",
+   "insert": "pocket",
+   "values": {
+    "slot_d": 25,
+    "pocket_n": 1,
+    "pocket_w": 22,
+    "pocket_r": 8
+   }
+  },
+  {
+   "name": "Two 2-finger pockets",
+   "insert": "pocket",
+   "values": {
+    "slot_d": 20,
+    "pocket_n": 2,
+    "pocket_w": 40
+   }
+  },
+  {
+   "name": "Unlevel roller",
+   "insert": "roller",
+   "values": {
+    "roll_type": "unlevel",
+    "roll_d": 28
+   }
+  },
+  {
+   "name": "Straight roller",
+   "insert": "roller",
+   "values": {
+    "roll_type": "straight",
+    "roll_d": 28
+   }
+  }
+ ],
+ "refs": [
+  {
+   "part": "carabiner",
+   "name": "Carabiner"
+  }
+ ]
+}
