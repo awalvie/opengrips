@@ -301,7 +301,7 @@ function control(p, group) {
 }
 
 function edited() {
-  renderNames(); changed();
+  renderNames(); changed(); saveKit();
   const all = $("reset-all");
   if (all && cur()) all.disabled = !Object.keys(ownParams(cur())).length;
 }
@@ -573,6 +573,40 @@ async function downloadKit() {
   }
 }
 
+// ---------- the kit in the page link: a reload keeps it, and a copied link shares it
+// #k= holds the selected index and each item with only the values that differ from the defaults
+// a slider calls this on every step, so the link is written once the steps stop
+let saveTimer = null;
+function saveKit() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const items = kit.items.map((it) => (it.type === "housing" ? { h: ownParams(it) } : { i: it.insertId, v: ownParams(it) }));
+    try { history.replaceState(null, "", "#k=" + encodeURIComponent(JSON.stringify({ s: kit.sel, items }))); } catch (e) { /* the link is a convenience */ }
+  }, 300);
+}
+// a link that does not parse or has a bad value gives the default kit
+function loadKit() {
+  try {
+    const m = location.hash.match(/^#k=(.+)$/);
+    if (!m) return false;
+    const k = JSON.parse(decodeURIComponent(m[1]));
+    if (!k.items.length || k.items.length > 30) return false;
+    // each item takes only its own settings, each inside its range
+    const items = k.items.map((x) => {
+      const it = x.h ? newHousing() : newInsert(x.i), own = defOf(it).params.map((p) => p.name);
+      Object.entries(x.h || x.v || {}).forEach(([n, v]) => { if (!own.includes(n)) throw new Error(n); it.values[n] = v; });
+      cleanParams(it.values);
+      return it;
+    });
+    kit.items.push(...items); kit.sel = Math.min(Math.max(0, k.s | 0), items.length - 1);
+    return true;
+  } catch (e) { return false; }
+}
+$("b-link").onclick = async () => {
+  try { await navigator.clipboard.writeText(location.href); toast("Link copied. It opens this kit."); }
+  catch (e) { toast("Copy the address from the address bar. It holds this kit."); }
+};
+
 // ---------- start
 $("partner").onchange = (e) => { partnerKey = e.target.value; renderNames(); framed = false; changed(true); };
 $("b-fit").onclick = frame;
@@ -609,6 +643,6 @@ themeButton();
 
 fetch("catalog.json").then((r) => r.json()).then((c) => {
   cat = c;
-  kit.items.push(newInsert("edge"), newHousing());
+  if (!loadKit()) kit.items.push(newInsert("edge"), newHousing());
   setMode(mode); renderNames(); update();
 }).catch((e) => status("Could not load the catalog: " + e.message, true));

@@ -12,7 +12,7 @@
 
 opengrips is a lift block for finger training. One housing hangs off a carabiner, and the grips slide into it and click in place: edges, pockets and rollers.
 
-You can build your own at [awalvie.github.io/opengrips](https://awalvie.github.io/opengrips/). Pick your grips, change the depth and the shape, and download the files. It all runs in your browser.
+You can build your own at [awalvie.github.io/opengrips](https://awalvie.github.io/opengrips/). Pick your grips, change the depth and the shape, and download the files. It all runs in your browser, and the page link keeps your kit, so you can bookmark it or share it.
 
 ![The configurator with a 20 mm edge in the pyramid housing](docs/img/configurator-edge.png)
 

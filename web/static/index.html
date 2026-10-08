@@ -145,6 +145,7 @@ footer a { color: inherit; }
 #bar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 8px; align-items: center; padding: 8px 16px;
        background: var(--panel); border-top: 1px solid var(--line); z-index: 5; }
 #kit-summary { flex: 1; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 480px) { #kit-summary { display: none; } #bar { justify-content: flex-end; } }
 @keyframes flash { 0%, 40% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
 .kitem.new button:first-child { animation: flash 1.6s ease-out; }
 #toast { position: fixed; left: 16px; right: 16px; bottom: 70px; z-index: 6; padding: 10px 14px; border-radius: 8px;
@@ -210,6 +211,7 @@ footer a { color: inherit; }
 <div id="toast" role="status" aria-live="polite" hidden></div>
 <div id="bar">
   <div id="kit-summary"></div>
+  <button id="b-link" title="Copy a link to this kit">Copy link</button>
   <button id="b-jump" title="Show the single files">Files</button>
   <button id="b-kit">Download kit</button>
 </div>
