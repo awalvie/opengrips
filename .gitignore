@@ -1,0 +1,8 @@
+# local scratch and generated files
+*.gcode
+*.bgcode
+*.3mf.bak
+.DS_Store
+__pycache__/
+.venv/
+.cache/
