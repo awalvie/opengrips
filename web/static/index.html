@@ -41,6 +41,14 @@ main { display: grid; grid-template-columns: 1fr; }
         padding: 10px 16px; border-radius: 999px; background: var(--panel); box-shadow: 0 2px 12px rgba(0,0,0,.18);
         font-size: 14px; font-weight: 600; pointer-events: none; }
 #busy[hidden] { display: none; }
+/* how to move the model: desktop with a mouse only, where the drag and the wheel do these things */
+#legend { display: none; position: absolute; right: 12px; bottom: 10px; margin: 0; font-size: 12px; color: var(--muted); }
+#legend b { font-weight: 600; color: var(--fg); }
+@media (min-width: 900px) and (pointer: fine) {
+  #legend { display: block; }
+  #showing { right: 380px; }
+}
+#viewer.no3d #legend { display: none; }
 #busy i { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--line); border-top-color: var(--accent);
           animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -147,6 +155,7 @@ footer a { color: inherit; }
       <label class="pick" id="partner-box"><span id="partner-lbl">Shown in</span><select id="partner"></select></label>
       <button id="b-fit" title="Frame the model">Fit</button>
     </div>
+    <p id="legend"><b>Drag</b> to turn · <b>Right-drag</b> or <b>Shift-drag</b> to move · <b>Scroll</b> to zoom · <b>Fit</b> to reset</p>
     <div id="busy" hidden><i></i>Updating preview…</div>
     <div id="status">Loading…</div>
     <div id="say" class="sr" role="status"></div>
