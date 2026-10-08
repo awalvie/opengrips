@@ -9,20 +9,20 @@
 <script>try { const t = localStorage.getItem("opengrips-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) { /* storage blocked */ }</script>
 <style>
 :root {
-  --bg: #f4f2ee; --panel: #ffffff; --fg: #1d1c1a; --muted: #6b675f; --line: #dedad2;
+  --bg: #f4f2ee; --panel: #ffffff; --fg: #1d1c1a; --muted: #5f5b54; --line: #dedad2; --edge: #8f897e;
   --accent: #3b3790; --accent-fg: #ffffff; --scene: #e6e3dc; --err: #a3271b;
 }
 /* dark follows the system unless the theme button set data-theme */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e;
+  :root:not([data-theme="light"]) { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e; --edge: #75716a;
           --accent: #8f8af0; --accent-fg: #121212; --scene: #262522; --err: #ff8a7a; color-scheme: dark; }
 }
-:root[data-theme="dark"] { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e;
+:root[data-theme="dark"] { --bg: #161615; --panel: #1f1e1c; --fg: #ecebe7; --muted: #a29e95; --line: #34322e; --edge: #75716a;
           --accent: #8f8af0; --accent-fg: #121212; --scene: #262522; --err: #ff8a7a; color-scheme: dark; }
 :root[data-theme="light"] { color-scheme: light; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
-button { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+button { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--edge); border-radius: 8px;
          padding: 8px 12px; min-height: 44px; cursor: pointer; }
 button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 button:disabled { opacity: .6; cursor: progress; }
@@ -85,7 +85,7 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .addrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .addrow button { border-style: dashed; font-weight: 600; }
 /* what the 3D view shows the item with: a small label over the value, our own arrow */
-.pick { position: relative; flex: 0 1 260px; min-width: 0; height: 44px; border: 1px solid var(--line);
+.pick { position: relative; flex: 0 1 260px; min-width: 0; height: 44px; border: 1px solid var(--edge);
         border-radius: 8px; background: var(--panel); }
 .pick[hidden] { display: none; }
 .pick span { position: absolute; left: 12px; top: 5px; font-size: 11px; line-height: 1; color: var(--muted); pointer-events: none; }
@@ -117,7 +117,7 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .slider input[type=range] { flex: 1; height: 36px; accent-color: var(--accent); margin: 0; }
 .slider .step { width: 44px; padding: 0; font-size: 20px; line-height: 1; }
 .param select { width: 100%; font: inherit; padding: 10px; min-height: 44px; margin-top: 6px; border-radius: 8px;
-                border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+                border: 1px solid var(--edge); background: var(--panel); color: var(--fg); }
 .param p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
 
 .hint a { color: var(--accent); }
