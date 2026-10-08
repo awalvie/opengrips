@@ -85,9 +85,9 @@ def check_slot(mesh, solid, part, params):
     bottom, top = mesh.bounds[0][2], mesh.bounds[1][2]
     problems = []
     # the first pocket from the left, or the middle of an edge
-    x = 0
+    x, w, r = 0, v["slot_w"], 4   # r: slot_r in src/inserts/edge.scad
     if part == "insert_pocket":
-        w = v["pocket_w"]
+        w, r = v["pocket_w"], v["pocket_r"]
         x = (w - (v["pocket_n"] * w + (v["pocket_n"] - 1) * v["pocket_gap"])) / 2
     # depth: the deepest opening seen from the front
     depth = max((hits(mesh, np.array([x, -5, z]), np.array([0, 1, 0])) or [0])[0] - 5
@@ -96,18 +96,22 @@ def check_slot(mesh, solid, part, params):
         problems.append(f"slot {depth:.1f} mm deep, asked {v['slot_d']}")
     # floor: under the front half of the slot, where the lip and the mouth round cut deepest. In the
     # solid render the last two surfaces down are the floor and the bottom; the core may not reach the floor.
-    for y in np.arange(1.5, max(depth / 2, 2), 1):
-        d, ds = down(mesh, x, y), down(solid, x, y)
+    # The core cavities are triangles, so a probe on the centreline can land on a web: probe off-centre
+    # too, out to where the floor corners start.
+    off = max(0, w / 2 - r - 1)
+    for xp, y in itertools.product((x - off, x, x + off), np.arange(1.5, max(depth / 2, 2), 1)):
+        d, ds = down(mesh, xp, y), down(solid, xp, y)
         if len(ds) == 2 and ds[0] > top - 0.05:
             continue   # solid from top to bottom, no slot here: the lip of an ergo edge sits further back
+        at = f"x={xp:.1f} y={y:.1f}"
         if len(ds) < 2 or abs(ds[-1] - bottom) > 0.05 or ds[-2] - bottom < MIN_WALL:
-            return problems + [f"no floor under the slot at y={y:.1f}"]
+            return problems + [f"no floor under the slot at {at}"]
         floor = ds[-2]
         if not any(abs(z - floor) < 0.05 for z in d):
-            return problems + [f"the slot breaks into the core at y={y:.1f}"]
+            return problems + [f"the slot breaks into the core at {at}"]
         wall = floor - max(z for z in d if z < floor - 0.01)
         if wall < MIN_WALL:
-            return problems + [f"floor {wall:.1f} mm at y={y:.1f}"]
+            return problems + [f"floor {wall:.1f} mm at {at}"]
     # front: the size mark is cut 1 mm into the face under the slot; the wall under it is the last one down
     for xf in np.arange(-25, 25.5, 1):
         d = down(mesh, xf, 0.5)
