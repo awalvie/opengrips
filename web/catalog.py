@@ -31,11 +31,6 @@ EDGE_SHAPE = [
 # Pockets share the edge shape, but their depth is a pocket depth.
 POCKET_SHAPE = [num("slot_d", "Pocket depth", 6, 35, 1, 20, help="From the lip to the back of the pocket.", simple=True)] + EDGE_SHAPE[1:]
 
-CORE = choice("core", "Core", [
-    {"value": "truss", "label": "Hollow truss core (less filament)"},
-    {"value": "solid", "label": "Solid"},
-], "truss", help="Triangle cavities inside, open at the back. The grip and the latch keep full walls.")
-
 # Widest slot or pocket row: one skin (2.4 mm) of wall stays between its ends and the latch arms.
 # 2 * (pk_w/2 - clear - lt_t - lt_gap - skin) = 93.8
 MAX_W = 93
@@ -80,7 +75,7 @@ INSERTS = [
         ]},
         "parts": [{"part": "insert_edge", "name": "Edge insert",
                    "supports": INSERT_SUPPORTS, "settings": SOLID}],
-        "params": EDGE_SHAPE + [CORE,
+        "params": EDGE_SHAPE + [
             num("slot_w", "Edge width", 40, MAX_W, 1, 92),
             num("ergo", "Ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers. The middle gets deeper, the ends shallower and rounder."),
         ],
@@ -102,7 +97,7 @@ INSERTS = [
             num("pocket_w", "Pocket width", 18, MAX_W, 1, 58, help="Mono about 22, two fingers about 40, three fingers about 58."),
             num("pocket_gap", "Wall between", 6, 20, 1, 10),
             num("pocket_r", "Opening corner radius", 2, 11, 0.5, 8, help="Rounding of the pocket opening, seen from the front."),
-        ] + POCKET_SHAPE + [CORE],
+        ] + POCKET_SHAPE,
         "max_span": MAX_W,   # pocket_n * pocket_w + (pocket_n - 1) * pocket_gap
     },
     {

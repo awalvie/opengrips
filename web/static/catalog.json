@@ -223,24 +223,6 @@
      "simple": false
     },
     {
-     "name": "core",
-     "label": "Core",
-     "type": "choice",
-     "options": [
-      {
-       "value": "truss",
-       "label": "Hollow truss core (less filament)"
-      },
-      {
-       "value": "solid",
-       "label": "Solid"
-      }
-     ],
-     "default": "truss",
-     "help": "Triangle cavities inside, open at the back. The grip and the latch keep full walls.",
-     "simple": false
-    },
-    {
      "name": "slot_w",
      "label": "Edge width",
      "type": "number",
@@ -410,24 +392,6 @@
      "default": 22,
      "unit": "mm",
      "help": "Room for the fingers under the grip, where it is lowest. A steep or deep edge can leave less room, because the insert floor must stay.",
-     "simple": false
-    },
-    {
-     "name": "core",
-     "label": "Core",
-     "type": "choice",
-     "options": [
-      {
-       "value": "truss",
-       "label": "Hollow truss core (less filament)"
-      },
-      {
-       "value": "solid",
-       "label": "Solid"
-      }
-     ],
-     "default": "truss",
-     "help": "Triangle cavities inside, open at the back. The grip and the latch keep full walls.",
      "simple": false
     }
    ],

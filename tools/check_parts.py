@@ -3,9 +3,9 @@
 Usage: python3 tools/check_parts.py [-j JOBS]
 
 Cases: every anchor, every preset, and the corners of the edge and pocket ranges in web/catalog.py.
-Checks: one watertight body. Edges and pockets also keep their depth, a floor under the slot that
-does not break into the core, a rail over the slot at the face, a wall under the size mark, and a
-wall between the slot end and the latch arm. Exits 1 if any check fails.
+Checks: one watertight body. Edges and pockets also keep their depth, a floor under the slot, a
+rail over the slot at the face, a wall under the size mark, and a wall between the slot end and
+the latch arm. Exits 1 if any check fails.
 """
 import argparse
 import itertools
@@ -79,9 +79,8 @@ def down(mesh, x, y):
     return [top - d for d in hits(mesh, np.array([x, y, top]), np.array([0, 0, -1]))]
 
 
-def check_slot(mesh, solid, part, params):
-    """Problems with the slot of an edge or pocket insert. solid is the same part with a solid core:
-    the slot floor must sit at the same height in both, or the slot breaks into the core."""
+def check_slot(mesh, part, params):
+    """Problems with the slot of an edge or pocket insert."""
     spec = catalog.all_params()
     v = {n: params.get(n, spec[n]["default"]) for n in spec}
     bottom, top = mesh.bounds[0][2], mesh.bounds[1][2]
@@ -96,24 +95,16 @@ def check_slot(mesh, solid, part, params):
                 for z in np.arange(bottom + 0.25, top, 0.25))
     if depth < v["slot_d"] - 0.5:
         problems.append(f"slot {depth:.1f} mm deep, asked {v['slot_d']}")
-    # floor: under the front half of the slot, where the lip and the mouth round cut deepest. In the
-    # solid render the last two surfaces down are the floor and the bottom; the core may not reach the floor.
-    # The core cavities are triangles, so a probe on the centreline can land on a web: probe off-centre
-    # too, out to where the floor corners start.
+    # floor: under the front half of the slot, where the lip and the mouth round cut deepest. The last
+    # two surfaces down are the floor and the bottom. Probe off-centre too, out to where the floor corners start.
     off = max(0, w / 2 - r - 1)
     for xp, y in itertools.product((x - off, x, x + off), np.arange(1.5, max(depth / 2, 2), 1)):
-        d, ds = down(mesh, xp, y), down(solid, xp, y)
-        if len(ds) == 2 and ds[0] > top - 0.05:
+        d = down(mesh, xp, y)
+        if len(d) == 2 and d[0] > top - 0.05 and abs(d[1] - bottom) < 0.05:
             continue   # solid from top to bottom, no slot here: the lip of an ergo edge sits further back
         at = f"x={xp:.1f} y={y:.1f}"
-        if len(ds) < 2 or abs(ds[-1] - bottom) > 0.05 or ds[-2] - bottom < MIN_WALL:
+        if len(d) < 2 or abs(d[-1] - bottom) > 0.05 or d[-2] - bottom < MIN_WALL:
             return problems + [f"no floor under the slot at {at}"]
-        floor = ds[-2]
-        if not any(abs(z - floor) < 0.05 for z in d):
-            return problems + [f"the slot breaks into the core at {at}"]
-        wall = floor - max(z for z in d if z < floor - 0.01)
-        if wall < MIN_WALL:
-            return problems + [f"floor {wall:.1f} mm at {at}"]
     # rail: the band over the slot, just behind the face, where the lip or mouth round climbs into it
     for xp in (x - off, x, x + off):
         face = hits(mesh, np.array([xp, -5, top - 0.5]), np.array([0, 1, 0]))
@@ -126,7 +117,7 @@ def check_slot(mesh, solid, part, params):
         if len(d) >= 2 and d[-2] - d[-1] < MIN_WALL:
             return problems + [f"front wall {d[-2] - d[-1]:.1f} mm under the size mark at x={xf:.0f}"]
     # ends: the wall from the slot end out to the latch relief, half way up the opening
-    ds = down(solid, x, depth / 2)
+    ds = down(mesh, x, depth / 2)
     ceiling = min((z for z in ds if z > ds[-2] + 0.01), default=None)
     if len(ds) < 3 or ceiling is None:
         return problems + ["no slot half way back"]
@@ -136,15 +127,15 @@ def check_slot(mesh, solid, part, params):
     return problems
 
 
-def check(part, params, mesh, solid):
+def check(part, params, mesh):
     problems = []
     bodies = mesh.split(only_watertight=False)
     if len(bodies) != 1:
         problems.append(f"{len(bodies)} bodies")
     if not mesh.is_watertight:
         problems.append("not watertight")
-    if solid is not None:
-        problems += check_slot(mesh, solid, part, params)
+    if part in ("insert_edge", "insert_pocket"):
+        problems += check_slot(mesh, part, params)
     return problems
 
 
@@ -158,11 +149,8 @@ def main():
     failed = 0
     with tempfile.TemporaryDirectory() as tmp, ThreadPoolExecutor(a.jobs) as pool:
         meshes = pool.map(lambda c: render(c[0], c[1], tmp), todo)
-        # edges and pockets again with a solid core, to find the slot floor without the core cavities
-        slotted = [c if c[0] in ("insert_edge", "insert_pocket") else None for c in todo]
-        solids = pool.map(lambda c: c and render(c[0], {**c[1], "core": "solid"}, tmp), slotted)
-        for (part, params), mesh, solid in zip(todo, meshes, solids):
-            problems = check(part, params, mesh, solid)
+        for (part, params), mesh in zip(todo, meshes):
+            problems = check(part, params, mesh)
             failed += bool(problems)
             label = " ".join([part] + [f"{k}={v}" for k, v in params.items()])
             print(f"{'FAIL' if problems else 'ok  '} {label}" + (f": {'; '.join(problems)}" if problems else ""))

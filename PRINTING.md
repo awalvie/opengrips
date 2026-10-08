@@ -23,7 +23,7 @@ Each part has one right way up. It keeps the load running along the layers and t
 | Part | On the bed | Supports |
 | --- | --- | --- |
 | Housing | On its back, pocket opening up | Automatic, under the anchor |
-| Edge or pocket insert | Upside down, top face down | Only under the slot floor. Block them inside the hollow core, whose roofs are printed as bridges. |
+| Edge or pocket insert | Upside down, top face down | Only under the slot floor |
 | Roller frame | Upright, floor down | Under the two cheeks, where the latch arms are cut away |
 | Roller | Standing on one end | None |
 | Printed axle | Lying down | None |

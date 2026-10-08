@@ -17,7 +17,6 @@ module insert_pocket() {
                 slot_cut(pocket_w, pocket_r);
         size_mark(str(slot_d, " mm", angle_label()), mouth_z);
         latch_relief();
-        if (core == "truss") insert_core_cut(mouth_z);
     }
     latch_arm();
 }

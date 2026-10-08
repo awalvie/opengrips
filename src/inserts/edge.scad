@@ -7,8 +7,7 @@ grip_r = 3;                                  // roundover on the lip
 edge_angle = 0;                              // ceiling angle: + incut (rises toward the back), - sloper
 ergo = 0;                                    // ergonomic curve: the lip sits this far back in the middle, 0 at the ends
 edge_sb = 0;                                 // lip set back from the front (0 = flush)
-core = "truss";                              // "truss": hollow core of triangle cavities, open at the back; "solid"
-skin = 2.4;                                  // wall kept around the core
+skin = 2.4;                                  // wall kept under the slot floor
 
 ins_top = floor_t + pk_h - clear;            // top of the insert
 lip_t = grip_r / tan((90 - edge_angle) / 2);  // how far the lip roundover runs up the face
@@ -168,19 +167,6 @@ module slot_cut(w = slot_w, open_r = 0) translate([0, edge_sb, 0]) {
     else edge_slot(w);
 }
 
-// Hollow core: triangle cavities open at the back. One band below the slot floor, one behind
-// the slot. The rail above the slot stays solid: it presses straight on the housing top wall.
-// floor_z, back_ceil, depth: slot floor, top of its back wall, and its depth (pockets by default)
-module insert_core_cut(floor_z = pk_floor, back_ceil = slot_ceil + slot_d * tan(edge_angle), depth = slot_d) {
-    xi = pk_w/2 - clear - lt_t - lt_gap - skin;     // stay clear of the latch arms
-    z0 = floor_t + clear + skin;
-    ytop = edge_sb + depth + skin;                   // behind the slot
-    if (floor_z - skin - z0 > 6)
-        xz(skin, pk_d) translate([-xi, z0]) truss_windows(2*xi, floor_z - skin - z0, 3);
-    if (back_ceil - floor_z > 6 && pk_d - clear - ytop > 4)
-        xz(ytop, pk_d) translate([-xi, floor_z]) truss_windows(2*xi, back_ceil - floor_z, 3);
-}
-
 module insert_blank() xz(0, pk_d - clear) translate([0, floor_t + pk_h/2]) rrect(pk_w - 2*clear, pk_h - 2*clear, r_in - clear);
 
 // size mark centred on the band below the slot. The letters are about size tall and sit a little
@@ -200,7 +186,6 @@ module insert_edge() {
         slot_cut();
         size_mark(str(slot_d, " mm", angle_label()), e_floor);
         latch_relief();
-        if (core == "truss") insert_core_cut(e_floor, e_back_top, e_dmax + ergo);
     }
     latch_arm();
 }

@@ -623,7 +623,8 @@ function loadKit() {
     // each item takes only its own settings, each inside its range
     const items = k.items.map((x) => {
       const it = x.h ? newHousing() : newInsert(x.i), own = defOf(it).params.map((p) => p.name);
-      Object.entries(x.h || x.v || {}).forEach(([n, v]) => { if (!own.includes(n)) throw new Error(n); it.values[n] = v; });
+      // a setting the page no longer has (from an older link) is dropped, the rest of the kit stays
+      Object.entries(x.h || x.v || {}).forEach(([n, v]) => { if (own.includes(n)) it.values[n] = v; });
       cleanParams(it.values);
       return it;
     });
