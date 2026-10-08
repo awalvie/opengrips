@@ -42,7 +42,7 @@ HOUSING = {
     "id": "housing",
     "name": "Housing",
     "parts": [{"part": "housing", "name": "Housing",
-               "print": "Print on its side, 4 walls, 40% infill. PETG or PLA+."}],
+               "print": "Print with the back face on the bed, pocket opening up, so the load runs along the layers. Needs some supports. 4 walls, 40% infill. PETG only: PLA is brittle in the cold and creeps when warm."}],
     "params": [
         choice("anchor", "Anchor", [
             {"value": "pyramid", "label": "Pyramid (four bars to a point)"},
