@@ -157,15 +157,16 @@ worker.onerror = (e) => {
 
 const stls = new Map();   // key: part and clean parameters; value: a promise of the STL bytes
 const KEEP = 60;          // STLs kept, about 0.3 MB each: enough to go back and forth between items
-async function stl(part, params) {
+// print: turn the part the way its print note says and put it on the bed (for_print in opengrips.scad)
+async function stl(part, params, print = false) {
   const clean = cleanParams(params);
   if (broken) throw broken;
-  const key = JSON.stringify([part, Object.keys(clean).sort().map((k) => [k, clean[k]])]);
+  const key = JSON.stringify([part, print, Object.keys(clean).sort().map((k) => [k, clean[k]])]);
   let job = stls.get(key);
   if (!job) {
     job = new Promise((resolve, reject) => {
       waiting[++jobId] = { resolve, reject };
-      worker.postMessage({ id: jobId, part, params: clean });
+      worker.postMessage({ id: jobId, part, params: print ? { ...clean, for_print: true } : clean });
     }).catch((e) => { if (stls.get(key) === job) stls.delete(key); throw e; });   // a failed render is tried again next time
   }
   stls.delete(key); stls.set(key, job);   // the last used goes last, the oldest goes first
@@ -453,7 +454,8 @@ async function update() {
 
 // ---------- downloads
 function buildDownloads() {
-  const dl = $("downloads"); dl.innerHTML = "";
+  const dl = $("downloads");
+  dl.innerHTML = kit.items.length ? `<p class="hint">Every file comes turned the way it prints, ready for the slicer.</p>` : "";
   kit.items.forEach((it) => {
     const box = document.createElement("div"); box.className = "ditem";
     box.innerHTML = `<h3>${nameOf(it)}</h3>`;
@@ -477,7 +479,7 @@ async function downloadPart(p, it) {
   toast(`Preparing ${p.name}.stl…`);
   try {
     const params = cleanParams(ownParams(it));
-    saveBlob(new Blob([await stl(p.part, params)], { type: "model/stl" }), fileName(p.part, params));
+    saveBlob(new Blob([await stl(p.part, params, true)], { type: "model/stl" }), fileName(p.part, params));
     $("toast").hidden = true;
   } catch (e) {
     toast("The file failed: " + e.message);
@@ -512,7 +514,7 @@ async function downloadKit() {
     const files = kit.items.flatMap((it, n) => {
       const folder = String(n + 1).padStart(2, "0") + "-" + nameOf(it).replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
       const params = cleanParams(ownParams(it));
-      return partsOf(it).map((p) => stl(p.part, params).then((data) => ({ name: `${folder}/${p.part}.stl`, data: new Uint8Array(data) })));
+      return partsOf(it).map((p) => stl(p.part, params, true).then((data) => ({ name: `${folder}/${p.part}.stl`, data: new Uint8Array(data) })));
     });
     saveBlob(await makeZip(await Promise.all(files)), "opengrips-kit.zip");
     $("toast").hidden = true;
