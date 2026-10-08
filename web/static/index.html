@@ -20,13 +20,9 @@ button { font: inherit; color: var(--fg); background: var(--panel); border: 1px 
 button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 button:disabled { opacity: .6; cursor: progress; }
 
-header { padding: 8px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); }
+header { padding: 8px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); min-height: 61px; }
 header h1 { font-size: 18px; margin: 0; }
 header span { color: var(--muted); font-size: 13px; }
-header .mode { margin-left: auto; display: flex; }
-header .mode button { border-radius: 0; }
-header .mode button:first-child { border-radius: 8px 0 0 8px; }
-header .mode button:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
 @media (max-width: 480px) { header span { display: none; } }
 
 main { display: grid; grid-template-columns: 1fr; }
@@ -125,11 +121,7 @@ footer a { color: inherit; }
 </style>
 </head>
 <body>
-<header><h1>opengrips</h1><span>no-hang lift block configurator</span>
-  <div class="mode" role="group" aria-label="Settings">
-    <button id="m-simple" aria-pressed="true">Simple</button><button id="m-adv" aria-pressed="false">Advanced</button>
-  </div>
-</header>
+<header><h1>opengrips</h1><span>no-hang lift block configurator</span></header>
 <main>
   <div id="viewer">
     <div id="showing" aria-live="polite"></div>

@@ -231,7 +231,7 @@ function buildEditor() {
   if (it.type === "housing") {
     cat.housing.params.filter((p) => mode === "advanced" || p.simple).forEach((p) => box.append(control(p, cat.housing)));
   } else buildInsertEditor(box, it);
-  // the way between the two modes sits right under the settings, not only in the header
+  // the way between the two modes sits right under the settings
   const more = document.createElement("button");
   more.className = "more";
   more.textContent = mode === "simple" ? "Show all settings" : "Show fewer settings";
@@ -459,12 +459,8 @@ $("add-hou").onclick = () => addItem(newHousing());
 function setMode(m) {
   mode = m;
   try { localStorage.setItem("opengrips-mode", m); } catch (e) { /* storage blocked */ }
-  $("m-simple").setAttribute("aria-pressed", m === "simple");
-  $("m-adv").setAttribute("aria-pressed", m === "advanced");
   if (cat) buildEditor();
 }
-$("m-simple").onclick = () => setMode("simple");
-$("m-adv").onclick = () => setMode("advanced");
 
 fetch("/api/catalog").then((r) => r.json()).then((c) => {
   cat = c;
