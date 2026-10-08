@@ -358,15 +358,16 @@ async function update() {
     if (!keep.includes(k)) drop(k);
   });
   if (!jobs.length) { status(""); return; }
-  let done = 0;
+  let done = 0, failed = false;   // after a failure the error stays, the parts still loading do not overwrite it
   const progress = () => status(`Rendering ${done + 1} of ${jobs.length}… (a new housing takes about 10 s)`);
   progress();
   try {
-    await Promise.all(jobs.map((j) => loadMesh(j, my).then(() => { done++; if (my === seq && done < jobs.length) progress(); })));
+    await Promise.all(jobs.map((j) => loadMesh(j, my).then(() => { done++; if (my === seq && !failed && done < jobs.length) progress(); })));
     if (my !== seq) return;
     status("");
     if (!framed) { frame(); framed = true; }
   } catch (e) {
+    failed = true;
     if (my === seq) status(e.message, true);
   }
 }
