@@ -22,10 +22,6 @@
      {
       "value": "keel",
       "label": "Keel (plate with a hole)"
-     },
-     {
-      "value": "bar",
-      "label": "Bolt (steel bolt through four legs)"
      }
     ],
     "default": "pyramid",
@@ -54,18 +50,6 @@
     "default": 16,
     "unit": "mm",
     "help": "Carabiner hole diameter in the keel.",
-    "simple": false
-   },
-   {
-    "name": "rod_d",
-    "label": "Bolt diameter",
-    "type": "number",
-    "min": 8,
-    "max": 12,
-    "step": 1,
-    "default": 10,
-    "unit": "mm",
-    "help": "A steel bolt and nut this thick, at least 90 mm long. It must fit your carabiner.",
     "simple": false
    },
    {
@@ -131,10 +115,6 @@
    "keel_hole": [
     "anchor",
     "keel"
-   ],
-   "rod_d": [
-    "anchor",
-    "bar"
    ]
   }
  },

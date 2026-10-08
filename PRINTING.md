@@ -50,7 +50,6 @@ I sliced the default parts in PrusaSlicer 2.9.6 with the settings above, PETG at
 | --- | --- |
 | Housing, pyramid anchor | 128 g |
 | Housing, keel anchor | 127 g |
-| Housing, bolt anchor | 129 g |
 | Edge insert, 20 mm | 135 g |
 | Pocket insert, three-finger | 149 g |
 | Roller frame | 54 g |

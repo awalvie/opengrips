@@ -40,6 +40,6 @@ on_bed() {
     if (part == "axle") axle();
 }
 if (part == "finger") finger();
-if (part == "carabiner") { carabiner(seat_z(), seat_rot()); if (anchor == "bar") bar_bolt(); }
+if (part == "carabiner") carabiner(seat_z(), seat_rot());
 if (part == "pin") loading_pin(seat_z(), seat_rot());
 if (part == "cfit") carabiner(zfit, seat_rot());

@@ -529,10 +529,6 @@ function buildNeed() {
   const housings = kit.items.filter((x) => x.type === "housing"), inserts = kit.items.filter((x) => x.type === "insert");
   const roller = inserts.some((x) => x.insertId === "roller");
   const need = ["A steel screwgate carabiner and a loading pin or sling for the weights."];
-  const bolts = {};   // bolt diameter: how many housings need one
-  housings.filter((h) => h.values.anchor === "bar").forEach((h) => { bolts[h.values.rod_d] = (bolts[h.values.rod_d] || 0) + 1; });
-  Object.entries(bolts).forEach(([d, n]) => need.push(n > 1 ? `For the bolt anchors: ${n} steel M${d} bolts, at least 90 mm, with nuts.`
-                                                           : `For the bolt anchor: a steel M${d} bolt, at least 90 mm, and a nut.`));
   if (roller) need.push("For the roller: a 12 mm steel rod or dowel works as the axle, or print it.");
   const steps = [];
   if (roller) steps.push("Roller: drop the roller between the cheeks, push the axle through both cheeks and the roller.");

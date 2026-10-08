@@ -51,11 +51,9 @@ HOUSING = {
         choice("anchor", "Anchor", [
             {"value": "pyramid", "label": "Pyramid (four bars to a point)"},
             {"value": "keel", "label": "Keel (plate with a hole)"},
-            {"value": "bar", "label": "Bolt (steel bolt through four legs)"},
         ], "pyramid", help="Every anchor holds the carabiner right under the grip, so the edge should stay level. Not measured yet.", simple=True),
         num("bar_angle", "Bar angle", 20, 40, 1, 25, unit="°", help="How steep the pyramid bars rise."),
         num("keel_hole", "Hole size", 13, 20, 0.5, 16, help="Carabiner hole diameter in the keel."),
-        num("rod_d", "Bolt diameter", 8, 12, 1, 10, help="A steel bolt and nut this thick, at least 90 mm long. It must fit your carabiner."),
         choice("style", "Look", [
             {"value": "truss", "label": "Truss windows (lighter)"},
             {"value": "solid", "label": "Solid walls"},
@@ -64,7 +62,7 @@ HOUSING = {
         num("floor_t", "Floor", 8, 12, 0.5, 8, help="Ties the anchor to the walls."),
         num("corner", "Corner radius", 3, 12, 0.5, 6, help="Rounding of the housing corners, seen from the front."),
     ],
-    "show_if": {"bar_angle": ["anchor", "pyramid"], "keel_hole": ["anchor", "keel"], "rod_d": ["anchor", "bar"]},
+    "show_if": {"bar_angle": ["anchor", "pyramid"], "keel_hole": ["anchor", "keel"]},
 }
 
 INSERTS = [

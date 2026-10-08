@@ -23,7 +23,7 @@ This is a prototype, and I haven't load-tested it yet. Print and use it at your 
 - Edges from 6 to 35 mm deep: flat, ergo, incut up to 20°, or slopers down to 45°.
 - Pockets: mono, two-finger, three-finger, or up to three side by side.
 - Rollers: unlevel or straight.
-- Three anchors under the housing: a pyramid of four bars, a keel plate with a hole, or a steel bolt.
+- Two anchors under the housing: a pyramid of four bars, or a keel plate with a hole.
 
 Every anchor holds the carabiner right under the grip, so the edge should stay level when you pull. I haven't measured that yet.
 
@@ -38,7 +38,6 @@ The [printing guide](PRINTING.md) has the settings, where the supports go, and h
 ## You'll also need
 
 - A steel screwgate carabiner, and a loading pin or sling for the weights.
-- For the bolt anchor, a steel bolt and nut at least 90 mm long.
 - For the roller, a 12 mm steel rod or dowel as the axle, or you can print one.
 
 ## Putting it together

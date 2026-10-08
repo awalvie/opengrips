@@ -1,6 +1,6 @@
 // Housing: a box around the pocket, with an anchor under it.
 
-anchor = "pyramid";        // "pyramid", "keel" or "bar". Every anchor holds the carabiner on the anchor plane.
+anchor = "pyramid";        // "pyramid" or "keel". Every anchor holds the carabiner on the anchor plane.
 
 style = "truss";           // "truss": triangle windows in the back wall; "solid"
 win_t = 5;                 // web between the windows
@@ -63,39 +63,13 @@ module anchor_keel() difference() {
     translate([0, grip_y, keel_hz]) rotate([90, 0, 0]) cylinder(d = keel_hole, h = keel_t + 2, center = true, $fn = 64);
 }
 
-// Bar: a steel bolt across the width, through four printed legs. The carabiner hooks over
-// the bolt, right under the anchor plane. A printed bar this long would break; a bolt does not.
-// The inner pair keeps the carabiner in the middle: off-centre, the load would roll the block.
-rod_d = 10;                                  // bolt diameter (M10)
-rod_z = -18;                                 // bolt centre height
-rod_span = 60;                               // distance between the outer legs
-rod_gap = 14;                                // gap between the inner legs: a 10 to 12 mm carabiner rod with clearance
-rod_leg_t = 10; rod_leg_w = 18;              // leg thickness (across) and width (depth)
-
-module anchor_bar() difference() {
-    for (x = [rod_span/2, (rod_gap + rod_leg_t)/2], sx = [-1, 1]) hull() {
-        bar([sx*x, grip_y, 3], [sx*x, grip_y, rod_z + 2], rod_leg_t, rod_leg_w, 2);
-        translate([sx*x, grip_y, rod_z]) rotate([0, 90, 0]) cylinder(d = rod_leg_w, h = rod_leg_t, center = true, $fn = 48);
-    }
-    translate([0, grip_y, rod_z]) rotate([0, 90, 0]) cylinder(d = rod_d + 0.4, h = rod_span + rod_leg_t + 2, center = true, $fn = 48);
-}
-
-// the bolt itself, for the preview: shank, head and nut
-module bar_bolt() translate([0, grip_y, rod_z]) rotate([0, 90, 0]) {
-    L = rod_span + rod_leg_t + 14;
-    cylinder(d = rod_d, h = L, center = true, $fn = 32);
-    for (s = [-1, 1]) translate([0, 0, s * (L/2 - 3)]) cylinder(d = rod_d * 1.7, h = 6, center = true, $fn = 6);
-}
-
 module anchor_any() {
     if (anchor == "pyramid") anchor_pyramid();
     if (anchor == "keel") anchor_keel();
-    if (anchor == "bar") anchor_bar();
 }
 
 // height of the carabiner rod centreline at the top of its bend, and the carabiner plane
 function seat_z() = anchor == "keel" ? keel_hz - keel_hole/2 + 5.5 + (16 - sqrt(16*16 - keel_t*keel_t/4))   // bend drops at the fin faces
-                  : anchor == "bar" ? rod_z + rod_d/2 + 5
                   : tri_rod_z;
 function seat_rot() = 0;
 
