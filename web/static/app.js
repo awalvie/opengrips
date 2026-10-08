@@ -243,14 +243,25 @@ function optionButtons(label, options, help) {
   return wrap;
 }
 
+// "Reset" next to a setting while it differs from its default
+function resetButton(p, reset) {
+  const b = document.createElement("button");
+  b.className = "reset"; b.textContent = "Reset";
+  b.setAttribute("aria-label", `Reset ${p.label}`);
+  b.hidden = cur().values[p.name] === p.default;
+  b.onclick = (e) => { e.preventDefault(); reset(); };
+  return b;
+}
+
 function control(p, group) {
   const vals = cur().values;
   if (p.type === "choice" && p.options.length <= 3) {
     const w = optionButtons(p.label, p.options.map((o) => {
       const m = o.label.match(/^(.*?)\s*\((.*)\)$/) || [null, o.label, ""];
       return { label: m[1], blurb: m[2], active: vals[p.name] === o.value,
-               pick: () => { vals[p.name] = o.value; refreshVisibility(); edited(); } };
+               pick: () => { vals[p.name] = o.value; w.querySelector(".reset").hidden = o.value === p.default; refreshVisibility(); edited(); } };
     }), p.help);
+    w.querySelector("label").append(resetButton(p, () => { vals[p.name] = p.default; buildEditor(); edited(); }));
     w.dataset.name = p.name; w.hidden = !shown(p, group);
     return w;
   }
@@ -258,18 +269,20 @@ function control(p, group) {
   wrap.className = "param"; wrap.hidden = !shown(p, group); wrap.dataset.name = p.name;
   const id = "p-" + p.name;
   if (p.type === "number") {
-    wrap.innerHTML = `<label for="${id}">${p.label}<output></output></label>
+    wrap.innerHTML = `<label for="${id}">${p.label}<span class="val"><output></output></span></label>
       <div class="slider"><button class="step" aria-label="Less ${p.label}">−</button>
       <input id="${id}" type="range" min="${p.min}" max="${p.max}" step="${p.step}">
       <button class="step" aria-label="More ${p.label}">+</button></div>` + (p.help ? `<p>${p.help}</p>` : "");
     const input = wrap.querySelector("input"), out = wrap.querySelector("output");
     const [less, more] = wrap.querySelectorAll(".step");
     input.value = vals[p.name];
-    const show = () => { out.textContent = `${input.value}${p.unit ? " " + p.unit : ""}`; };
+    const show = () => { out.textContent = `${input.value}${p.unit ? " " + p.unit : ""}`; reset.hidden = vals[p.name] === p.default; };
     const set = (v) => {
       input.value = Math.min(Number(input.max), Math.max(p.min, v));
       vals[p.name] = Number(input.value); show(); fitPockets(); edited();
     };
+    const reset = resetButton(p, () => set(p.default));
+    out.before(reset);
     show();
     input.addEventListener("input", () => set(Number(input.value)));
     less.onclick = () => set(Number(input.value) - p.step);
@@ -280,12 +293,19 @@ function control(p, group) {
       (p.help ? `<p>${p.help}</p>` : "");
     const sel = wrap.querySelector("select");
     sel.value = vals[p.name];
-    sel.addEventListener("change", () => { vals[p.name] = sel.value; refreshVisibility(); edited(); });
+    const pick = (v) => { vals[p.name] = sel.value = v; reset.hidden = v === p.default; refreshVisibility(); edited(); };
+    const reset = resetButton(p, () => pick(p.default));
+    wrap.querySelector("label").append(reset);
+    sel.addEventListener("change", () => pick(sel.value));
   }
   return wrap;
 }
 
-function edited() { renderNames(); changed(); }
+function edited() {
+  renderNames(); changed();
+  const all = $("reset-all");
+  if (all && cur()) all.disabled = !Object.keys(ownParams(cur())).length;
+}
 
 // pockets: the width slider's maximum follows the count and the wall, so the pockets always fit
 function fitPockets() {
@@ -316,7 +336,15 @@ function buildEditor() {
   more.className = "more";
   more.textContent = mode === "simple" ? "Show all settings" : "Show fewer settings";
   more.onclick = () => { setMode(mode === "simple" ? "advanced" : "simple"); };
-  box.append(more);
+  // every setting back to its default; an insert keeps its kind
+  const all = document.createElement("button");
+  all.id = "reset-all"; all.className = "more"; all.textContent = "Reset all to defaults";
+  all.disabled = !Object.keys(ownParams(it)).length;
+  all.onclick = () => {
+    kit.items[kit.sel] = it.type === "housing" ? newHousing() : newInsert(it.insertId);
+    buildEditor(); edited(); toast(`${nameOf(cur())}: every setting is back to its default.`);
+  };
+  box.append(more, all);
 }
 
 function buildInsertEditor(box, it) {
