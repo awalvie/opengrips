@@ -6,7 +6,8 @@
    {
     "part": "housing",
     "name": "Housing",
-    "print": "Print with the back face on the bed, pocket opening up, so the load runs along the layers. Needs some supports. 4 walls, 40% infill. PETG only: PLA is brittle in the cold and creeps when warm."
+    "supports": "supports under the anchor",
+    "settings": "4 walls · 40% gyroid"
    }
   ],
   "params": [
@@ -168,7 +169,8 @@
     {
      "part": "insert_edge",
      "name": "Edge insert",
-     "print": "Print upside down, top face on the bed: the grip comes out smooth. Supports only under the slot floor."
+     "supports": "supports under the slot floor",
+     "settings": "4 walls · 40% gyroid"
     }
    ],
    "params": [
@@ -309,7 +311,8 @@
     {
      "part": "insert_pocket",
      "name": "Pocket insert",
-     "print": "Print upside down, top face on the bed: the grip comes out smooth. Supports only under the slot floor."
+     "supports": "supports under the slot floor",
+     "settings": "4 walls · 40% gyroid"
     }
    ],
    "params": [
@@ -457,17 +460,20 @@
     {
      "part": "insert_roller",
      "name": "Roller frame",
-     "print": "Print upright, floor on the bed. Supports under the cheeks, where the latch arms are cut away."
+     "supports": "supports under the cheeks",
+     "settings": "4 walls · 40% gyroid"
     },
     {
      "part": "roller",
      "name": "Roller",
-     "print": "Print standing on one end. No supports."
+     "supports": "no supports",
+     "settings": "3 walls · 20% infill"
     },
     {
      "part": "axle",
      "name": "Axle",
-     "print": "Use a 12 mm steel rod or dowel, or print it lying down."
+     "supports": "no supports, or use a 12 mm steel rod",
+     "settings": "4 walls · 100% infill"
     }
    ],
    "params": [

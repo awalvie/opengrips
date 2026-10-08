@@ -166,7 +166,7 @@ worker.onerror = (e) => {
 
 const stls = new Map();   // key: part and clean parameters; value: a promise of the STL bytes
 const KEEP = 60;          // STLs kept, about 0.3 MB each: enough to go back and forth between items
-// print: turn the part the way its print note says and put it on the bed (for_print in opengrips.scad)
+// print: turn the part the way it prints and put it on the bed (for_print in opengrips.scad)
 async function stl(part, params, print = false) {
   const clean = cleanParams(params);
   if (broken) throw broken;
@@ -493,16 +493,17 @@ async function update() {
 // ---------- downloads
 function buildDownloads() {
   const dl = $("downloads");
-  dl.innerHTML = kit.items.length ? `<p class="hint">Every file comes turned the way it prints, ready for the slicer.</p>` : "";
+  dl.innerHTML = kit.items.length ? `<p class="hint">PETG, ready to slice.
+    <a href="https://github.com/awalvie/opengrips/blob/main/PRINTING.md" target="_blank" rel="noopener">Printing guide</a></p>` : "";
   kit.items.forEach((it) => {
     const box = document.createElement("div"); box.className = "ditem";
     box.innerHTML = `<h3>${nameOf(it)}</h3>`;
     partsOf(it).forEach((p) => {
-      const a = document.createElement("a");
-      a.href = "#";
-      a.innerHTML = `<strong>${p.name}.stl</strong><small>${p.print}</small>`;
-      a.onclick = (e) => { e.preventDefault(); downloadPart(p, it); };
-      box.append(a);
+      const row = document.createElement("div"); row.className = "dfile";
+      row.innerHTML = `<span><strong>${p.name}<i>.stl</i></strong><small>${p.settings} · ${p.supports}</small></span>
+        <button type="button" title="Download ${p.name}.stl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></button>`;
+      row.querySelector("button").onclick = () => downloadPart(p, it);
+      box.append(row);
     });
     dl.append(box);
   });
@@ -536,7 +537,8 @@ function buildNeed() {
                                  "To swap: pinch both buttons, pull the insert out by the grip, push the next one in.");
   if (housings.length) steps.push("Clip the carabiner to the anchor under the housing. Check it before every session.");
   const list = (xs) => `<ul>${xs.map((x) => `<li>${x}</li>`).join("")}</ul>`;
-  $("need").innerHTML = `<strong>You also need</strong>${list(need)}` + (steps.length ? `<strong>Put it together</strong>${list(steps)}` : "");
+  $("need").innerHTML = `<details><summary>Hardware and assembly</summary><strong>You also need</strong>${list(need)}`
+    + (steps.length ? `<strong>Put it together</strong>${list(steps)}` : "") + `</details>`;
 }
 
 // one folder per item, NN-name/part.stl, so equal parts of two items do not overwrite each other

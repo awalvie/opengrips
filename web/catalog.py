@@ -40,13 +40,14 @@ CORE = choice("core", "Core", [
 # 2 * (pk_w/2 - clear - lt_t - lt_gap - skin) = 93.8
 MAX_W = 93
 
-INSERT_PRINT = "Print upside down, top face on the bed: the grip comes out smooth. Supports only under the slot floor."
+INSERT_SUPPORTS = "supports under the slot floor"
+SOLID = "4 walls · 40% gyroid"
 
 HOUSING = {
     "id": "housing",
     "name": "Housing",
     "parts": [{"part": "housing", "name": "Housing",
-               "print": "Print with the back face on the bed, pocket opening up, so the load runs along the layers. Needs some supports. 4 walls, 40% infill. PETG only: PLA is brittle in the cold and creeps when warm."}],
+               "supports": "supports under the anchor", "settings": SOLID}],
     "params": [
         choice("anchor", "Anchor", [
             {"value": "pyramid", "label": "Pyramid (four bars to a point)"},
@@ -78,7 +79,7 @@ INSERTS = [
             {"label": "Sloper", "blurb": "round 35° curve, open hand", "values": {"edge_angle": -35, "ergo": 0, "slot_d": 25}},
         ]},
         "parts": [{"part": "insert_edge", "name": "Edge insert",
-                   "print": INSERT_PRINT}],
+                   "supports": INSERT_SUPPORTS, "settings": SOLID}],
         "params": EDGE_SHAPE + [CORE,
             num("slot_w", "Edge width", 40, MAX_W, 1, 92),
             num("ergo", "Ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers. The middle gets deeper, the ends shallower and rounder."),
@@ -95,7 +96,7 @@ INSERTS = [
             {"label": "Two pairs", "blurb": "two 2-finger pockets", "values": {"pocket_n": 2, "pocket_w": 40}},
         ]},
         "parts": [{"part": "insert_pocket", "name": "Pocket insert",
-                   "print": INSERT_PRINT}],
+                   "supports": INSERT_SUPPORTS, "settings": SOLID}],
         "params": [
             num("pocket_n", "Pockets", 1, 3, 1, 1, unit=""),
             num("pocket_w", "Pocket width", 18, MAX_W, 1, 58, help="Mono about 22, two fingers about 40, three fingers about 58."),
@@ -113,9 +114,9 @@ INSERTS = [
             {"label": "Straight", "blurb": "plain cylinder", "values": {"roll_type": "straight"}},
         ]},
         "parts": [
-            {"part": "insert_roller", "name": "Roller frame", "print": "Print upright, floor on the bed. Supports under the cheeks, where the latch arms are cut away."},
-            {"part": "roller", "name": "Roller", "print": "Print standing on one end. No supports."},
-            {"part": "axle", "name": "Axle", "print": "Use a 12 mm steel rod or dowel, or print it lying down."},
+            {"part": "insert_roller", "name": "Roller frame", "supports": "supports under the cheeks", "settings": SOLID},
+            {"part": "roller", "name": "Roller", "supports": "no supports", "settings": "3 walls · 20% infill"},
+            {"part": "axle", "name": "Axle", "supports": "no supports, or use a 12 mm steel rod", "settings": "4 walls · 100% infill"},
         ],
         "params": [
             choice("roll_type", "Roller", [

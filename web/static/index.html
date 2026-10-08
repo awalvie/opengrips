@@ -112,15 +112,22 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
                 border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
 .param p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
 
-.ditem { margin: 10px 0 14px; }
+.hint a { color: var(--accent); }
+.ditem { margin: 12px 0 14px; }
 .ditem h3 { font-size: 14px; margin: 0 0 6px; }
-.ditem a { display: block; text-decoration: none; color: var(--fg); background: var(--panel); border: 1px solid var(--line);
-           border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
-.ditem a strong { display: block; }
-.ditem a small { color: var(--muted); }
+.dfile { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line);
+         border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+.dfile span { flex: 1; min-width: 0; }
+.dfile strong { display: block; }
+.dfile strong i { font-style: normal; font-weight: 400; color: var(--muted); }
+.dfile small { display: block; color: var(--muted); font-size: 12.5px; }
+.dfile button { flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; display: grid; place-items: center; }
+.dfile button svg { width: 34px; height: 34px; padding: 7px; border-radius: 50%; background: var(--accent);
+                    stroke: var(--accent-fg); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 #msg { color: var(--err); font-size: 13px; }
 .need { font-size: 13.5px; color: var(--muted); }
 .need ul { padding-left: 18px; margin: 6px 0; }
+.need summary { cursor: pointer; color: var(--fg); padding: 6px 0; }
 footer { padding: 14px 0; font-size: 12.5px; color: var(--muted); }
 footer p { margin: 0 0 6px; }
 footer a { color: inherit; }
