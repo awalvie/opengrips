@@ -1,6 +1,10 @@
 """Render parts across the catalog and check that each one can be printed and used.
 
-Usage: python3 tools/check_parts.py [-j JOBS]
+Usage: python3 tools/check_parts.py [-j JOBS] [-e native|wasm|both]
+
+Engines: native renders with the openscad on your PATH. wasm renders with the WebAssembly OpenSCAD
+the configurator uses (tools/render_wasm.mjs, needs node), so it checks the files people download.
+The default is both.
 
 Cases: every anchor, every preset, the corners of the edge, pocket and flip ranges in web/catalog.py,
 and the fit test.
@@ -64,12 +68,14 @@ def cases():
     return out
 
 
-def render(part, params, tmp):
-    stl = pathlib.Path(tmp) / f"{abs(hash((part, tuple(sorted(params.items())))))}.stl"
-    args = ["openscad", "-q", "--export-format", "binstl", "-D", f'part="{part}"']
-    for k, v in params.items():
-        args += ["-D", f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}"]
-    subprocess.run(args + ["-o", str(stl), str(ROOT / "opengrips.scad")], check=True, capture_output=True)
+def render(part, params, tmp, engine):
+    stl = pathlib.Path(tmp) / f"{engine}-{abs(hash((part, tuple(sorted(params.items())))))}.stl"
+    defs = [f'part="{part}"'] + [f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}" for k, v in params.items()]
+    if engine == "native":
+        args = ["openscad", "-q", "--export-format", "binstl", *(x for d in defs for x in ("-D", d)), "-o", str(stl), str(ROOT / "opengrips.scad")]
+    else:
+        args = ["node", str(ROOT / "tools/render_wasm.mjs"), str(stl), *defs]
+    subprocess.run(args, check=True, capture_output=True)
     return trimesh.load(stl)
 
 
@@ -179,17 +185,19 @@ def check(part, params, mesh):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-j", "--jobs", type=int, default=8)
+    ap.add_argument("-e", "--engine", choices=("native", "wasm", "both"), default="both")
     a = ap.parse_args()
     if json.loads((ROOT / "web/static/catalog.json").read_text()) != json.loads(json.dumps(catalog.catalog())):
         sys.exit("web/static/catalog.json is out of date: python3 web/catalog.py > web/static/catalog.json")
-    todo = cases()
+    engines = ("native", "wasm") if a.engine == "both" else (a.engine,)
+    todo = [(e, part, params) for e in engines for part, params in cases()]
     failed = 0
     with tempfile.TemporaryDirectory() as tmp, ThreadPoolExecutor(a.jobs) as pool:
-        meshes = pool.map(lambda c: render(c[0], c[1], tmp), todo)
-        for (part, params), mesh in zip(todo, meshes):
+        meshes = pool.map(lambda c: render(c[1], c[2], tmp, c[0]), todo)
+        for (engine, part, params), mesh in zip(todo, meshes):
             problems = check(part, params, mesh)
             failed += bool(problems)
-            label = " ".join([part] + [f"{k}={v}" for k, v in params.items()])
+            label = " ".join([engine, part] + [f"{k}={v}" for k, v in params.items()])
             print(f"{'FAIL' if problems else 'ok  '} {label}" + (f": {'; '.join(problems)}" if problems else ""))
     print(f"{len(todo) - failed} of {len(todo)} passed")
     sys.exit(1 if failed else 0)

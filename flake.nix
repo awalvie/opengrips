@@ -13,6 +13,7 @@
           packages = [
             pkgs.gnumake
             pkgs.openscad
+            pkgs.nodejs
             (pkgs.python3.withPackages (ps: with ps; [ trimesh manifold3d numpy networkx lxml scipy rtree pillow ]))
           ] ++ pkgs.lib.optional pkgs.stdenv.isLinux pkgs.xvfb-run;
         };
