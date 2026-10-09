@@ -155,10 +155,13 @@ footer a { color: inherit; }
 @keyframes flash { 0%, 40% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
 .kitem.new button:first-child { animation: flash 1.6s ease-out; }
 #toast { position: fixed; left: 16px; right: 16px; bottom: 70px; z-index: 6; padding: 10px 14px; border-radius: 8px;
-         background: var(--fg); color: var(--bg); font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+         background: var(--fg); color: var(--bg); font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+         display: flex; align-items: center; gap: 8px; }
 #toast[hidden] { display: none; }
-#toast button { float: right; min-height: 36px; margin: -8px -6px -8px 10px; padding: 4px 12px; background: none;
+#toast button { flex: none; min-height: 36px; margin: -8px 0; padding: 4px 12px; background: none;
                 color: inherit; border-color: currentColor; font-weight: 600; }
+#toast button:first-of-type { margin-left: auto; }
+#toast button:last-of-type { margin-right: -6px; }
 @media (min-width: 900px) { #toast { left: auto; width: 360px; } }
 #b-kit { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
 

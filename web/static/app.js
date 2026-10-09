@@ -442,18 +442,29 @@ function buildInsertEditor(box, it) {
 
 // ---------- kit list
 // sticky: the toast stays until the next one or until hideToast(the number toast returned).
-// undo: an Undo button that calls it
+// undo: an Undo button that calls it. An Undo offer has no time limit (WCAG 2.2.1): it stays
+// until the next edit, × or Escape.
 let toastTimer = null, toastNo = 0;
 function toast(text, sticky, undo) {
   const t = $("toast"); t.textContent = text; t.hidden = false;
   if (undo) {
     const b = document.createElement("button"); b.textContent = "Undo";
-    b.onclick = () => { t.hidden = true; undo(); };
-    t.append(b);
+    b.onclick = () => { undo(); closeToast(); };
+    const x = document.createElement("button"); x.textContent = "×"; x.setAttribute("aria-label", "Close");
+    x.onclick = closeToast;
+    t.append(b, x);
   }
-  clearTimeout(toastTimer); if (!sticky) toastTimer = setTimeout(() => { t.hidden = true; }, undo ? 6000 : 3500);
+  clearTimeout(toastTimer); if (!sticky && !undo) toastTimer = setTimeout(() => { t.hidden = true; }, 3500);
   return ++toastNo;
 }
+// a toast that closes with the focus on its button would leave the focus nowhere: put it on the
+// picked option in the editor
+function closeToast() {
+  const t = $("toast"), had = t.contains(document.activeElement);
+  t.hidden = true;
+  if (had) ($("editor").querySelector('[aria-checked="true"]') || $("editor").querySelector("button"))?.focus();
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("toast").hidden) closeToast(); });
 function hideToast(no) { if (no === toastNo) $("toast").hidden = true; }
 
 // a copy of the kit before a change that loses settings, for Undo. Several insert kinds in a row on
