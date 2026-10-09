@@ -16,7 +16,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # render every case with the browser's OpenSCAD, the one people download from, and check it
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      # the versions in the flake's nixpkgs, so CI checks what nix develop checks
+      - run: pip install trimesh==5.1.0 manifold3d==3.5.4 numpy==2.5.2 scipy==1.18.1 networkx==3.6.1 rtree==1.4.1
+      - run: python3 tools/check_parts.py -e wasm
+
   deploy:
+    needs: check
     runs-on: ubuntu-latest
     environment:
       name: github-pages
