@@ -21,6 +21,16 @@ let renderer = null, scene, camera, controls, model, loader;
 
 function sceneColor() {
   scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--scene").trim());
+  requestRender();
+}
+
+// draw a frame only when something changed (three.js manual, "Rendering on demand"). While the
+// orbit damping eases out, controls.update() fires "change" and keeps asking for the next frame.
+let renderRequested = false;
+function requestRender() {
+  if (!renderer || renderRequested) return;
+  renderRequested = true;
+  requestAnimationFrame(() => { renderRequested = false; controls.update(); renderer.render(scene, camera); });
 }
 
 // the "Shown in" picker and Fit sit over the top of the view; on a short phone view they would
@@ -34,6 +44,7 @@ function resize() {
   const w = viewer.clientWidth, h = viewer.clientHeight;
   renderer.setSize(w, h, false); camera.aspect = w / h;
   camera.setViewOffset(w, h, 0, -overlay() / 2, w, h);   // also updates the projection
+  requestRender();
 }
 
 try {
@@ -51,7 +62,7 @@ try {
   loader = new THREE.STLLoader();
   sceneColor();
   new ResizeObserver(resize).observe(viewer);
-  (function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
+  controls.addEventListener("change", requestRender);
 } catch (e) {
   if (renderer) renderer.domElement.remove();
   renderer = null;
@@ -475,12 +486,14 @@ async function loadMesh(job, my) {
   m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30),
         new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: job.ghost ? 0.2 : 0.55 })));
   meshes[job.part] = m; model.add(m);
+  requestRender();
 }
 
 function drop(k) {
   model.remove(meshes[k]);
   meshes[k].children.forEach((c) => { c.geometry.dispose(); c.material.dispose(); });
   delete meshes[k];
+  requestRender();
 }
 
 async function update() {
