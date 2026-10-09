@@ -244,7 +244,8 @@ function shown(p, group) {
   return !rule || cur().values[rule[0]] === rule[1];
 }
 
-// a row of big buttons; options are [{label, blurb, active, pick}]
+// a row of big buttons; options are [{label, blurb, active, pick}]. A radio group for the keyboard
+// (W3C APG radio group): Tab stops on the checked option only, the arrow keys move and pick.
 function optionButtons(label, options, help) {
   const wrap = document.createElement("div"); wrap.className = "param"; wrap.dataset.key = label;
   wrap.innerHTML = `<label>${label}</label><div class="opts" role="radiogroup" aria-label="${label}"></div>` +
@@ -256,9 +257,26 @@ function optionButtons(label, options, help) {
     b.innerHTML = `<strong>${o.label}</strong>` + (o.blurb ? `<small>${o.blurb}</small>` : "");
     b.onclick = () => {
       wrap.querySelectorAll(".opts button").forEach((x) => x.setAttribute("aria-checked", x === b));
+      wrap.roving();
       o.pick();
     };
     wrap.querySelector(".opts").append(b);
+  });
+  const bs = [...wrap.querySelectorAll(".opts button")];
+  // the checked option takes the Tab stop; with none checked, the first one
+  wrap.roving = () => {
+    const on = bs.find((x) => x.getAttribute("aria-checked") === "true") || bs[0];
+    bs.forEach((x) => { x.tabIndex = x === on ? 0 : -1; });
+  };
+  wrap.roving();
+  wrap.querySelector(".opts").addEventListener("keydown", (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;   // browser shortcuts, such as Alt+Left for back
+    const i = bs.indexOf(document.activeElement), n = bs.length;
+    const to = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: n - 1 }[e.key];
+    if (i < 0 || to === undefined) return;
+    e.preventDefault();
+    const b = bs[(to + n) % n];
+    b.focus(); b.click();
   });
   return wrap;
 }
@@ -413,7 +431,7 @@ function buildInsertEditor(box, it) {
     const w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, active: on(o),
       pick: () => { Object.assign(cur().values, o.values); buildEditor(); edited(); } })));
     const bs = w.querySelectorAll(".opts button");
-    syncChoice = () => sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o)));
+    syncChoice = () => { sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o))); w.roving(); };
     box.append(w);
   }
   // a choice that the buttons above already set (Unlevel or Straight) is not shown twice
