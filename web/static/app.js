@@ -122,7 +122,7 @@ function nameOf(it) {
   const pockets = (n, w) => `${n > 1 ? n + " × " : ""}${{ 22: "mono", 40: "two-finger", 58: "three-finger" }[w] || `${w} mm`} pocket`;
   if (it.insertId === "flip") {
     const grip = (k) => `${v[k + "_d"]} mm ${v[k + "_kind"] === "edge" ? (v[k + "_ergo"] ? "ergo edge" : "edge") : pockets(v[k + "_pn"], v[k + "_pw"])}`;
-    return `Flip, ${grip("top")} / ${grip("bot")}`;
+    return `Two-sided, ${grip("top")} / ${grip("bot")}`;
   }
   if (it.insertId === "pocket") {
     const name = `${pockets(v.pocket_n, v.pocket_w)}, ${v.slot_d} mm${ang}`;
@@ -254,8 +254,8 @@ function shown(p, group) {
 
 // a row of big buttons; options are [{label, blurb, active, pick}]. A radio group for the keyboard
 // (W3C APG radio group): Tab stops on the checked option only, the arrow keys move and pick.
-function optionButtons(label, options, help) {
-  const wrap = document.createElement("div"); wrap.className = "param"; wrap.dataset.key = label;
+function optionButtons(label, options, help, key = label) {
+  const wrap = document.createElement("div"); wrap.className = "param"; wrap.dataset.key = key;
   wrap.innerHTML = `<label>${label}</label><div class="opts" role="radiogroup" aria-label="${label}"></div>` +
     (help ? `<p>${help}</p>` : "");
   if (options.length === 3) wrap.querySelector(".opts").classList.add("three");
@@ -305,7 +305,7 @@ function control(p, group) {
     const w = optionButtons(p.label, p.options.map((o) => {
       const m = o.label.match(/^(.*?)\s*\((.*)\)$/) || [null, o.label, ""];
       return { label: m[1], blurb: m[2], active: vals[p.name] === o.value,
-               pick: () => { vals[p.name] = o.value; w.querySelector(".reset").hidden = o.value === p.default; refreshVisibility(); edited(); } };
+               pick: () => { vals[p.name] = o.value; buildEditor(); edited(); } };   // a grip kind changes the rows under it
     }), p.help);
     w.querySelector("label").append(resetButton(p, () => { vals[p.name] = p.default; buildEditor(); edited(); }));
     w.dataset.name = p.name; w.hidden = !shown(p, group);
@@ -350,7 +350,7 @@ function control(p, group) {
 // any later change closes an Undo offer, so Undo never brings back a kit older than the last edit
 function edited() {
   if ($("toast").querySelector("button")) $("toast").hidden = true;
-  if (syncChoice) syncChoice();
+  syncs.forEach((f) => f());
   renderNames(); changed(); saveKit();
   const all = $("reset-all");
   if (all && cur()) all.hidden = !Object.keys(ownParams(cur())).length;
@@ -380,7 +380,7 @@ function refreshVisibility() {
 }
 
 // the editor shows the selected item only. Simple: the main choices. Advanced: every setting.
-let syncChoice = null;   // re-marks the Shape, Fingers or Roller button after a slider moves
+let syncs = [];   // re-mark the Shape, Fingers or Roller buttons after a slider moves
 
 // a rebuild replaces every control, so keyboard focus would fall back to the page. Note where it
 // was (its row, and its place in the row), and put it back on the new control there.
@@ -403,18 +403,20 @@ function restoreFocus(f) {
 }
 
 // the settings of one housing or insert, as the cards in its catalog entry. Simple mode shows the
-// main settings; All settings adds the rest under "More settings" in each card. choiceEl: the
-// one-tap choice (Shape, Fingers or Roller), in the card marked choice; skip: settings it covers.
-function buildCards(box, def, choiceEl, skip = () => false) {
+// main settings; All settings adds the rest under "More settings" in each card. choiceFor(card):
+// the one-tap choice (Shape, Fingers or Roller) of a card marked choice, or null; it goes first,
+// or after the card's choice_after setting. skip: settings the page sets another way.
+function buildCards(box, def, choiceFor, skip = () => false) {
   def.cards.forEach((c) => {
     const ps = c.params.map((n) => specIn(def, n)).filter((p) => !skip(p));
     const main = ps.filter((p) => p.simple), more = mode === "advanced" ? ps.filter((p) => !p.simple) : [];
-    if (!main.length && !more.length && !(c.choice && choiceEl)) return;
+    const choiceEl = c.choice && choiceFor ? choiceFor(c) : null;
+    if (!main.length && !more.length && !choiceEl) return;
     const card = document.createElement("section");
     card.className = "ecard";
     card.innerHTML = `<h3>${c.title}${c.sub ? `<small>${c.sub}</small>` : ""}</h3>`;
-    if (c.choice && choiceEl) card.append(choiceEl);
-    main.forEach((p) => card.append(control(p, def)));
+    if (choiceEl && !c.choice_after) card.append(choiceEl);
+    main.forEach((p) => { card.append(control(p, def)); if (choiceEl && p.name === c.choice_after) card.append(choiceEl); });
     if (more.length) {
       card.insertAdjacentHTML("beforeend", `<h4 class="more-h">More settings</h4>`);
       more.forEach((p) => card.append(control(p, def)));
@@ -427,7 +429,7 @@ function buildEditor() {
   const spot = focusSpot();
   const box = $("editor"); box.innerHTML = "";
   const it = cur();
-  syncChoice = null;
+  syncs = [];
   if (!it) { box.innerHTML = `<p class="hint">Your kit is empty. Add an insert or a housing above.</p>`; return; }
   // Simple or every setting: a switch, it applies at once (W3C APG switch pattern)
   const sw = document.createElement("button");
@@ -436,7 +438,7 @@ function buildEditor() {
   sw.innerHTML = `<span class="track" aria-hidden="true"><span class="knob"></span></span>All settings`;
   sw.onclick = () => { setMode(mode === "simple" ? "advanced" : "simple"); };
   box.append(sw);
-  if (it.type === "housing") buildCards(box, cat.housing, null);
+  if (it.type === "housing") buildCards(box, cat.housing);
   else buildInsertEditor(box, it);
   // every setting back to its default; an insert keeps its kind
   const all = document.createElement("button");
@@ -451,33 +453,98 @@ function buildEditor() {
   restoreFocus(spot);
 }
 
+// a one-tap choice (Shape, Fingers or Roller) that sets several values at once. prefix: a grip of a
+// two-sided insert ("top_"), whose values carry it. Depth and lip radius are only a starting
+// point: the slider changes them without changing the shape.
+function oneTap(sc, prefix, key) {
+  const vals = () => cur().values;
+  const on = (o) => Object.entries(o.values).every(([k, v]) => ["slot_d", "grip_r", "r"].includes(k) || vals()[prefix + k] === v);
+  const w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, active: on(o),
+    pick: () => { Object.entries(o.values).forEach(([k, v]) => { vals()[prefix + k] = v; }); buildEditor(); edited(); } })), sc.help, key);
+  const bs = w.querySelectorAll(".opts button");
+  syncs.push(() => { sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o))); w.roving(); });
+  return w;
+}
+
+// the two-sided insert, and the one-sided kinds it is made from
+const twoDef = () => cat.inserts.find((i) => i.two_sided_of);
+
+// one side to two: the item's settings become the top grip's, inside the two-sided ranges.
+// Returns the new item and what had to change to fit.
+function toTwoSided(it) {
+  const two = twoDef(), t = newInsert(two.id), v = it.values, w = t.values, cut = [];
+  const say = (n, x, y) => { const p = specIn(two, n); cut.push(`${p.label.replace(/^Top /, "").toLowerCase()} ${x} to ${y}${p.unit ? " " + p.unit : ""}`); };
+  const put = (n, x, quiet) => {
+    const p = specIn(two, n), y = Math.min(p.max, Math.max(p.min, x));
+    if (y !== x && !quiet) say(n, x, y);
+    w[n] = y;
+  };
+  w.top_kind = it.insertId;
+  put("top_d", v.slot_d); put("top_r", v.grip_r);
+  if (it.insertId === "edge") { put("top_ergo", v.ergo); put("top_w", v.slot_w); }
+  else {
+    put("top_pn", v.pocket_n); put("top_pr", v.pocket_r); put("top_pw", v.pocket_w, true); put("top_pgap", v.pocket_gap, true);
+    fitSpan(two.spans[0], w, two);
+    if (w.top_pw !== v.pocket_w) say("top_pw", v.pocket_w, w.top_pw);
+    if (w.top_pgap !== v.pocket_gap) say("top_pgap", v.pocket_gap, w.top_pgap);
+  }
+  if (v.edge_angle) cut.push(`angle ${v.edge_angle}° to 0°`);
+  // each grip of a two-sided insert takes half the height
+  const h = specIn(defOf(it), "slot_h");
+  if (h && v.slot_h !== h.default) cut.push(`slot height ${v.slot_h} mm to half the insert`);
+  return { it: t, cut };
+}
+
+// two sides to one: the top grip becomes the insert, the bottom grip goes
+function toOneSided(it) {
+  const v = it.values;
+  return v.top_kind === "edge"
+    ? newInsert("edge", { slot_d: v.top_d, grip_r: v.top_r, ergo: v.top_ergo, slot_w: v.top_w })
+    : newInsert("pocket", { slot_d: v.top_d, grip_r: v.top_r, pocket_n: v.top_pn, pocket_w: v.top_pw, pocket_gap: v.top_pgap, pocket_r: v.top_pr });
+}
+
+function setSides(n) {
+  const it = cur(), name = nameOf(it);
+  if ((n === 2) === (it.insertId === twoDef().id)) return;
+  const { it: next, cut } = n === 2 ? toTwoSided(it) : { it: toOneSided(it), cut: [] };
+  const done = undoable(n === 2 ? `${name} is now two-sided.` + (cut.length ? ` To fit, the ${cut.join(", ")}.` : "")
+                                : `${name} is now one-sided. The bottom grip is gone.`);
+  kit.items[kit.sel] = next; buildEditor(); edited(); done();
+}
+
 function buildInsertEditor(box, it) {
-  const def = insertDef(it.insertId);
+  const def = insertDef(it.insertId), two = twoDef(), isTwo = it.insertId === two.id;
+  const shownKind = isTwo ? it.values.top_kind : it.insertId;   // a two-sided insert shows as its top grip's kind
   const pickKind = (id) => {
-    if (id === cur().insertId) return;
+    if (id === shownKind) return;
+    // a two-sided insert keeps both grips when its top grip turns from edge to pockets or back
+    if (isTwo && two.two_sided_of.includes(id)) { cur().values.top_kind = id; buildEditor(); edited(); return; }
     const done = undoable(`${nameOf(cur())} is now ${insertDef(id).name.toLowerCase()}.`, true);
     kit.items[kit.sel] = newInsert(id); buildEditor(); edited(); done();
   };
+  const kindDef = insertDef(shownKind);
   // one short word each, in one row; the line under it says what the picked insert is
-  const kinds = optionButtons("Insert", cat.inserts.map((i) => ({
-    label: i.name, active: i.id === it.insertId, pick: () => pickKind(i.id) })), `${def.name}: ${def.blurb}.`);
+  const kinds = optionButtons("Insert", cat.inserts.filter((i) => !i.two_sided_of).map((i) => ({
+    label: i.name, active: i.id === shownKind, pick: () => pickKind(i.id) })), `${kindDef.name}: ${kindDef.blurb}.`);
   kinds.querySelector(".opts").classList.add("row");
   const head = document.createElement("section");
   head.className = "ecard"; head.innerHTML = `<h3 class="sr">Insert</h3>`; head.append(kinds);
+  if (two.two_sided_of.includes(shownKind))
+    head.append(optionButtons("Sides", [{ label: "One", active: !isTwo, pick: () => setSides(1) },
+                                        { label: "Two", active: isTwo, pick: () => setSides(2) }],
+                              "Two adds a second grip on the underside. Turn the insert over to swap."));
   box.append(head);
-  const sc = def.simple_choice;
-  // depth and lip radius are only a starting point, the slider changes them without changing the shape
-  const on = (o) => Object.entries(o.values).every(([k, v]) => k === "slot_d" || k === "grip_r" || cur().values[k] === v);
-  let w = null;
-  if (sc) {
-    w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, active: on(o),
-      pick: () => { Object.assign(cur().values, o.values); buildEditor(); edited(); } })));
-    const bs = w.querySelectorAll(".opts button");
-    syncChoice = () => { sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o))); w.roving(); };
+  if (isTwo) {
+    // each grip card has the one-tap choice of its kind; the Insert row sets the top grip's kind
+    const side = (c) => c.params[0].split("_")[0];
+    const choiceFor = (c) => oneTap(two.side_choices[it.values[side(c) + "_kind"]], side(c) + "_", `${side(c)}-choice`);
+    buildCards(box, def, choiceFor, (p) => p.name === "top_kind");
+  } else {
+    const sc = def.simple_choice;
+    // a choice that the buttons above already set (Unlevel or Straight) is not shown twice
+    const covered = (p) => p.type === "choice" && sc && sc.options.every((o) => p.name in o.values);
+    buildCards(box, def, () => (sc ? oneTap(sc, "", sc.label) : null), covered);
   }
-  // a choice that the buttons above already set (Unlevel or Straight) is not shown twice
-  const covered = (p) => p.type === "choice" && sc && sc.options.every((o) => p.name in o.values);
-  buildCards(box, def, w, covered);
   fitPockets();
 }
 
@@ -698,7 +765,7 @@ function buildNeed() {
   if (roller) steps.push("Roller: drop the roller between the cheeks, push the axle through both cheeks and the roller.");
   if (inserts.length) steps.push("Slide the insert into the housing until both side buttons click.",
                                  "To swap: pinch both buttons, pull the insert out by the grip, push the next one in.");
-  if (flip) steps.push("Flip insert: to use the other grip, take it out, turn it over and push it back in.");
+  if (flip) steps.push("Two-sided insert: to use the other grip, take it out, turn it over and push it back in.");
   if (housings.length) steps.push("Clip the carabiner to the anchor under the housing. Check it before every session.");
   const list = (xs) => `<ul>${xs.map((x) => `<li>${x}</li>`).join("")}</ul>`;
   $("need").innerHTML = `<details><summary>Hardware and assembly</summary><strong>You also need</strong>${list(need)}`

@@ -127,7 +127,8 @@
      "bar_angle",
      "keel_hole"
     ],
-    "choice": false
+    "choice": false,
+    "choice_after": ""
    },
    {
     "title": "Walls",
@@ -138,7 +139,8 @@
      "floor_t",
      "corner"
     ],
-    "choice": false
+    "choice": false,
+    "choice_after": ""
    }
   ]
  },
@@ -282,18 +284,23 @@
       "slot_w",
       "ergo"
      ],
-     "choice": true
+     "choice": true,
+     "choice_after": ""
     }
    ]
   },
   {
    "id": "flip",
-   "name": "Flip",
+   "name": "Two-sided",
    "blurb": "two grips, turn it over",
+   "two_sided_of": [
+    "edge",
+    "pocket"
+   ],
    "parts": [
     {
      "part": "insert_flip",
-     "name": "Flip insert",
+     "name": "Two-sided insert",
      "supports": "no supports",
      "settings": "3 walls · 15% gyroid"
     }
@@ -611,7 +618,8 @@
       "top_pgap",
       "top_pr"
      ],
-     "choice": false
+     "choice": true,
+     "choice_after": ""
     },
     {
      "title": "Bottom grip",
@@ -627,9 +635,63 @@
       "bot_pgap",
       "bot_pr"
      ],
-     "choice": false
+     "choice": true,
+     "choice_after": "bot_kind"
     }
-   ]
+   ],
+   "side_choices": {
+    "edge": {
+     "label": "Shape",
+     "help": "Two-sided grips are flat or ergo: any angle takes finger room away.",
+     "options": [
+      {
+       "label": "Flat",
+       "blurb": "classic edge",
+       "values": {
+        "ergo": 0,
+        "r": 3
+       }
+      },
+      {
+       "label": "Ergo",
+       "blurb": "curved for longer middle fingers",
+       "values": {
+        "ergo": 5,
+        "r": 3.5
+       }
+      }
+     ]
+    },
+    "pocket": {
+     "label": "Fingers",
+     "options": [
+      {
+       "label": "Mono",
+       "blurb": "one finger",
+       "values": {
+        "pn": 1,
+        "pw": 22
+       }
+      },
+      {
+       "label": "Two",
+       "blurb": "two fingers",
+       "values": {
+        "pn": 1,
+        "pw": 40
+       }
+      },
+      {
+       "label": "Three",
+       "blurb": "three fingers",
+       "values": {
+        "pn": 1,
+        "pw": 58
+       }
+      }
+     ]
+    }
+   }
   },
   {
    "id": "pocket",
@@ -794,7 +856,8 @@
       "edge_angle",
       "slot_h"
      ],
-     "choice": true
+     "choice": true,
+     "choice_after": ""
     }
    ]
   },
@@ -881,7 +944,8 @@
       "roll_type",
       "roll_d"
      ],
-     "choice": true
+     "choice": true,
+     "choice_after": ""
     }
    ]
   }

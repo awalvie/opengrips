@@ -23,8 +23,9 @@ def choice(name, label, options, default, help="", simple=False):
 # The editor shows each housing or insert as cards: a title, an optional line under it, and the
 # settings in it. "choice": the card also holds the one-tap choice (Shape, Fingers or Roller).
 # A new setting goes in a card here; the page needs no change.
-def card(title, params, sub="", choice=False):
-    return {"title": title, "sub": sub, "params": [p["name"] if isinstance(p, dict) else p for p in params], "choice": choice}
+def card(title, params, sub="", choice=False, choice_after=""):
+    return {"title": title, "sub": sub, "params": [p["name"] if isinstance(p, dict) else p for p in params], "choice": choice,
+            "choice_after": choice_after}
 
 
 EDGE_SHAPE = [
@@ -101,14 +102,29 @@ def flip_show_if(key):
 
 FLIP = {
     "id": "flip",
-    "name": "Flip",
+    "name": "Two-sided",
     "blurb": "two grips, turn it over",
-    "parts": [{"part": "insert_flip", "name": "Flip insert", "supports": "no supports", "settings": SOLID}],
+    # the page shows no Flip type: an edge or pocket insert set to two sides becomes this one
+    "two_sided_of": ["edge", "pocket"],
+    "parts": [{"part": "insert_flip", "name": "Two-sided insert", "supports": "no supports", "settings": SOLID}],
     "params": flip_grip("top", "Top", 20, 3) + flip_grip("bot", "Bottom", 10, 2),
     "show_if": flip_show_if("top") | flip_show_if("bot"),
     "spans": [{"names": [f"{k}_pn", f"{k}_pw", f"{k}_pgap"], "max": FLIP_SPAN} for k in ("top", "bot")],
-    "cards": [card("Top grip", flip_grip("top", "", 0, 0), "faces up"),
-              card("Bottom grip", flip_grip("bot", "", 0, 0), "on the underside: turn the insert over to use it")],
+    "cards": [card("Top grip", flip_grip("top", "", 0, 0), "faces up", choice=True),
+              card("Bottom grip", flip_grip("bot", "", 0, 0), "on the underside: turn the insert over to use it", choice=True,
+                   choice_after="bot_kind")],
+    # each grip's one-tap choice, by its kind; the values are the grip's own, without its top_ or bot_
+    "side_choices": {
+        "edge": {"label": "Shape", "help": "Two-sided grips are flat or ergo: any angle takes finger room away.", "options": [
+            {"label": "Flat", "blurb": "classic edge", "values": {"ergo": 0, "r": 3}},
+            {"label": "Ergo", "blurb": "curved for longer middle fingers", "values": {"ergo": 5, "r": 3.5}},
+        ]},
+        "pocket": {"label": "Fingers", "options": [
+            {"label": "Mono", "blurb": "one finger", "values": {"pn": 1, "pw": 22}},
+            {"label": "Two", "blurb": "two fingers", "values": {"pn": 1, "pw": 40}},
+            {"label": "Three", "blurb": "three fingers", "values": {"pn": 1, "pw": 58}},
+        ]},
+    },
 }
 
 INSERTS = [
