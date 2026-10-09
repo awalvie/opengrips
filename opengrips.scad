@@ -4,7 +4,6 @@
 
 part = "housing";
 $fn = 48;
-zfit = 0;   // carabiner height for the seat fit search (part "cfit")
 
 include <src/lib.scad>
 include <src/config.scad>
@@ -51,6 +50,5 @@ on_bed() {
     if (part == "fit_cheek") fit_cheek();
 }
 if (part == "finger") finger();
-if (part == "carabiner") carabiner(seat_z(), seat_rot());
-if (part == "pin") loading_pin(seat_z(), seat_rot());
-if (part == "cfit") carabiner(zfit, seat_rot());
+if (part == "carabiner") carabiner(seat_z());
+if (part == "pin") loading_pin(seat_z());

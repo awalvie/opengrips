@@ -19,7 +19,7 @@ bar_angle = 25;
 bar_r = 1.5;                                 // edge round on bars and apex node
 node_len = 8;                                // apex node: hull of the last node_len mm of every bar
 tri_apex = leg_z - leg_x * tan(bar_angle);   // the point
-tri_rod_z = tri_apex + 12.35;                // carabiner seat: highest with the bend hooked over the node and no overlap (fit search at 25 degrees)
+tri_rod_z = tri_apex + 12.35;                // carabiner seat: highest with the bend hooked over the node and no overlap (found by a fit search at 25 degrees)
 
 function pyramid_legs() = [for (sx = [-1, 1], l = [[leg_yf, bar_tf, bar_wf], [leg_yb, bar_tb, bar_wb]])
     [[sx*leg_x, l[0], leg_z], l[1], l[2]]];
@@ -68,10 +68,9 @@ module anchor_any() {
     if (anchor == "keel") anchor_keel();
 }
 
-// height of the carabiner rod centreline at the top of its bend, and the carabiner plane
+// height of the carabiner rod centreline at the top of its bend
 function seat_z() = anchor == "keel" ? keel_hz - keel_hole/2 + 5.5 + (16 - sqrt(16*16 - keel_t*keel_t/4))   // bend drops at the fin faces
                   : tri_rod_z;
-function seat_rot() = 0;
 
 module housing_shell() {
     minkowski() {

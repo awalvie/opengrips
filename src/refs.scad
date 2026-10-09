@@ -16,11 +16,11 @@ module bend(c, r, d, up) translate([0, c[0], c[1]]) intersection() {
     translate([-d, -r - d, up > 0 ? 0 : -r - d]) cube([2*d, 2*(r + d), r + d]);
 }
 
-// Asymmetric D wire gate, after a reference photo. zt: rod centreline at the top of the nose end;
-// rot: turn about Z (90 = carabiner plane across the width). The nose end sits on the anchor and the
-// seat heights are fitted to it: keep R and rod. Then a straight spine down the back to one big
-// rounded corner, a straight side up the front to the hinge, and a wire loop from there to the nose.
-module carabiner(zt, rot = 0) translate([0, grip_y, 0]) rotate([0, 0, rot]) translate([0, -grip_y, 0]) {
+// Asymmetric D wire gate, after a reference photo. zt: rod centreline at the top of the nose end.
+// The nose end sits on the anchor and the seat heights are fitted to it: keep R and rod. Then a
+// straight spine down the back to one big rounded corner, a straight side up the front to the hinge,
+// and a wire loop from there to the nose.
+module carabiner(zt) {
     rod = 10; y0 = grip_y; R = 16; Rb = 18;
     p3 = function(q) [0, q[0], q[1]];
     cb = [y0 + R - Rb, zt - car_L + Rb];              // big corner: the spine runs straight into it
@@ -45,7 +45,7 @@ module carabiner(zt, rot = 0) translate([0, grip_y, 0]) rotate([0, 0, rot]) tran
     seg(p3([y0 + R, zt - R - 30]), p3(nose - 7 * g), w);   // the thin bar from the spine to the nose
 }
 
-module loading_pin(zt, rot = 0) translate([0, grip_y, 0]) rotate([0, 0, rot]) translate([0, -grip_y, 0]) {
+module loading_pin(zt) {
     zb = zt - car_L + 2;
     translate([0, grip_y, zb - 14]) rotate([90, 0, 0]) rotate_extrude() translate([14, 0]) circle(d = 8);
     translate([0, grip_y, zb - 28]) rotate([180, 0, 0]) cylinder(d = 30, h = 220);

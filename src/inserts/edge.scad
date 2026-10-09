@@ -18,7 +18,6 @@ lip_t = grip_r / tan((90 - edge_angle) / 2);  // how far the lip roundover runs 
 pk_round_room = ins_top - rail_t - abs(slot_d * tan(edge_angle)) - (floor_t + clear + skin) - slot_h;
 slot_ceil = ins_top - max(rail_t + min(grip_r, max(0, pk_round_room)), lip_t + 1) - max(0, slot_d * tan(edge_angle));
 mouth_r = min(grip_r, ins_top - rail_t - slot_ceil);   // pocket mouth round
-slot_zc = slot_ceil - slot_h/2;              // middle of the slot at the lip
 // pocket floor: slot_h of room where the ceiling is lowest, one skin above the insert bottom
 pk_floor = max(floor_t + clear + skin, min(slot_ceil, slot_ceil + slot_d * tan(edge_angle)) - slot_h);
 
