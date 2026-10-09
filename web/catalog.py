@@ -53,14 +53,14 @@ HOUSING = {
                "supports": "supports under the anchor", "settings": SOLID}],
     "params": [
         choice("anchor", "Anchor", [
-            {"value": "pyramid", "label": "Pyramid (four bars to a point)"},
-            {"value": "keel", "label": "Keel (plate with a hole)"},
+            {"value": "pyramid", "icon": "pyramid", "label": "Pyramid (four bars to a point)"},
+            {"value": "keel", "icon": "keel", "label": "Keel (plate with a hole)"},
         ], "pyramid", help="Every anchor holds the carabiner right under the grip, so the edge should stay level. Not measured yet.", simple=True),
         num("bar_angle", "Bar angle", 20, 40, 1, 25, unit="°", help="How steep the pyramid bars rise."),
         num("keel_hole", "Hole size", 13, 20, 0.5, 16, help="Carabiner hole diameter in the keel."),
         choice("style", "Look", [
-            {"value": "truss", "label": "Truss windows (lighter)"},
-            {"value": "solid", "label": "Solid walls"},
+            {"value": "truss", "icon": "truss", "label": "Truss windows (lighter)"},
+            {"value": "solid", "icon": "solid", "label": "Solid walls"},
         ], "truss", help="Triangle windows in the back wall."),
         num("top_t", "Top wall", 6, 12, 0.5, 8, help="The insert presses up on it. Thicker is stiffer and heavier."),
         num("floor_t", "Floor", 8, 12, 0.5, 8, help="Ties the anchor to the walls."),
@@ -116,13 +116,13 @@ FLIP = {
     # each grip's one-tap choice, by its kind; the values are the grip's own, without its top_ or bot_
     "side_choices": {
         "edge": {"label": "Shape", "help": "Two-sided grips are flat or ergo: any angle takes finger room away.", "options": [
-            {"label": "Flat", "blurb": "classic edge", "values": {"ergo": 0, "r": 3}},
-            {"label": "Ergo", "blurb": "curved for longer middle fingers", "values": {"ergo": 5, "r": 3.5}},
+            {"label": "Flat", "icon": "flat", "blurb": "classic edge", "values": {"ergo": 0, "r": 3}},
+            {"label": "Ergo", "icon": "ergo", "blurb": "curved for longer middle fingers", "values": {"ergo": 5, "r": 3.5}},
         ]},
         "pocket": {"label": "Fingers", "options": [
-            {"label": "Mono", "blurb": "one finger", "values": {"pn": 1, "pw": 22}},
-            {"label": "Two", "blurb": "two fingers", "values": {"pn": 1, "pw": 40}},
-            {"label": "Three", "blurb": "three fingers", "values": {"pn": 1, "pw": 58}},
+            {"label": "Mono", "icon": "mono", "blurb": "one finger", "values": {"pn": 1, "pw": 22}},
+            {"label": "Two", "icon": "two", "blurb": "two fingers", "values": {"pn": 1, "pw": 40}},
+            {"label": "Three", "icon": "three", "blurb": "three fingers", "values": {"pn": 1, "pw": 58}},
         ]},
     },
 }
@@ -132,12 +132,12 @@ INSERTS = [
         "id": "edge",
         "name": "Edge",
         "blurb": "flat, ergo, incut or sloper",
-        # Simple mode: one short choice that sets several values at once
+        # Simple mode: one short choice that sets several values at once. An icon is a name in app.js ICON.
         "simple_choice": {"label": "Shape", "options": [
-            {"label": "Flat", "blurb": "classic edge", "values": {"edge_angle": 0, "ergo": 0, "grip_r": 3}},
-            {"label": "Ergo", "blurb": "curved for longer middle fingers", "values": {"edge_angle": 0, "ergo": 5, "grip_r": 4}},
-            {"label": "Incut", "blurb": "tilts in 10°, better traction", "values": {"edge_angle": 10, "ergo": 0, "grip_r": 2.5}},
-            {"label": "Sloper", "blurb": "round 35° curve, open hand", "values": {"edge_angle": -35, "ergo": 0, "slot_d": 25}},
+            {"label": "Flat", "icon": "flat", "blurb": "classic edge", "values": {"edge_angle": 0, "ergo": 0, "grip_r": 3}},
+            {"label": "Ergo", "icon": "ergo", "blurb": "curved for longer middle fingers", "values": {"edge_angle": 0, "ergo": 5, "grip_r": 4}},
+            {"label": "Incut", "icon": "incut", "blurb": "tilts in 10°, better traction", "values": {"edge_angle": 10, "ergo": 0, "grip_r": 2.5}},
+            {"label": "Sloper", "icon": "sloper", "blurb": "round 35° curve, open hand", "values": {"edge_angle": -35, "ergo": 0, "slot_d": 25}},
         ]},
         "parts": [{"part": "insert_edge", "name": "Edge insert",
                    "supports": INSERT_SUPPORTS, "settings": SOLID}],
@@ -153,9 +153,9 @@ INSERTS = [
         "name": "Pockets",
         "blurb": "mono to three fingers",
         "simple_choice": {"label": "Fingers", "options": [
-            {"label": "Mono", "blurb": "one finger", "values": {"pocket_n": 1, "pocket_w": 22}},
-            {"label": "Two", "blurb": "two fingers", "values": {"pocket_n": 1, "pocket_w": 40}},
-            {"label": "Three", "blurb": "three fingers", "values": {"pocket_n": 1, "pocket_w": 58}},
+            {"label": "Mono", "icon": "mono", "blurb": "one finger", "values": {"pocket_n": 1, "pocket_w": 22}},
+            {"label": "Two", "icon": "two", "blurb": "two fingers", "values": {"pocket_n": 1, "pocket_w": 40}},
+            {"label": "Three", "icon": "three", "blurb": "three fingers", "values": {"pocket_n": 1, "pocket_w": 58}},
         ]},
         "parts": [{"part": "insert_pocket", "name": "Pocket insert",
                    "supports": INSERT_SUPPORTS, "settings": SOLID}],

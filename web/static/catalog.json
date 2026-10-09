@@ -18,10 +18,12 @@
     "options": [
      {
       "value": "pyramid",
+      "icon": "pyramid",
       "label": "Pyramid (four bars to a point)"
      },
      {
       "value": "keel",
+      "icon": "keel",
       "label": "Keel (plate with a hole)"
      }
     ],
@@ -60,10 +62,12 @@
     "options": [
      {
       "value": "truss",
+      "icon": "truss",
       "label": "Truss windows (lighter)"
      },
      {
       "value": "solid",
+      "icon": "solid",
       "label": "Solid walls"
      }
     ],
@@ -154,6 +158,7 @@
     "options": [
      {
       "label": "Flat",
+      "icon": "flat",
       "blurb": "classic edge",
       "values": {
        "edge_angle": 0,
@@ -163,6 +168,7 @@
      },
      {
       "label": "Ergo",
+      "icon": "ergo",
       "blurb": "curved for longer middle fingers",
       "values": {
        "edge_angle": 0,
@@ -172,6 +178,7 @@
      },
      {
       "label": "Incut",
+      "icon": "incut",
       "blurb": "tilts in 10°, better traction",
       "values": {
        "edge_angle": 10,
@@ -181,6 +188,7 @@
      },
      {
       "label": "Sloper",
+      "icon": "sloper",
       "blurb": "round 35° curve, open hand",
       "values": {
        "edge_angle": -35,
@@ -646,6 +654,7 @@
      "options": [
       {
        "label": "Flat",
+       "icon": "flat",
        "blurb": "classic edge",
        "values": {
         "ergo": 0,
@@ -654,6 +663,7 @@
       },
       {
        "label": "Ergo",
+       "icon": "ergo",
        "blurb": "curved for longer middle fingers",
        "values": {
         "ergo": 5,
@@ -667,6 +677,7 @@
      "options": [
       {
        "label": "Mono",
+       "icon": "mono",
        "blurb": "one finger",
        "values": {
         "pn": 1,
@@ -675,6 +686,7 @@
       },
       {
        "label": "Two",
+       "icon": "two",
        "blurb": "two fingers",
        "values": {
         "pn": 1,
@@ -683,6 +695,7 @@
       },
       {
        "label": "Three",
+       "icon": "three",
        "blurb": "three fingers",
        "values": {
         "pn": 1,
@@ -702,6 +715,7 @@
     "options": [
      {
       "label": "Mono",
+      "icon": "mono",
       "blurb": "one finger",
       "values": {
        "pocket_n": 1,
@@ -710,6 +724,7 @@
      },
      {
       "label": "Two",
+      "icon": "two",
       "blurb": "two fingers",
       "values": {
        "pocket_n": 1,
@@ -718,6 +733,7 @@
      },
      {
       "label": "Three",
+      "icon": "three",
       "blurb": "three fingers",
       "values": {
        "pocket_n": 1,

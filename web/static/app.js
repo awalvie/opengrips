@@ -252,7 +252,24 @@ function shown(p, group) {
   return !rule || cur().values[rule[0]] === rule[1];
 }
 
-// a choice: one bar of options, [{label, blurb, active, pick}]. A radio group for the keyboard
+// small line pictures for choices, by the catalog's "icon" name: an edge seen from the side,
+// a pocket seen from the front, a housing anchor or wall
+const ICON = {
+  flat: '<path d="M3 7v11M3 12h14a3 3 0 0 1 3 3v3"/>',
+  ergo: '<path d="M3 7v11M3 12h4q5 3 10 0a3 3 0 0 1 3 3v3"/>',
+  incut: '<path d="M3 7v11M3 14l14-3a3 3 0 0 1 3 3v4"/>',
+  sloper: '<path d="M3 7v11M3 9q12 0 17 9"/>',
+  pyramid: '<path d="M4 5h16M4 5l8 14 8-14M9 5l3 14 3-14"/>',
+  keel: '<path d="M5 5h14l-3 14H8z"/><circle cx="12" cy="11" r="2.5"/>',
+  truss: '<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 19l6-14 6 14 6-14"/>',
+  solid: '<rect x="3" y="5" width="18" height="14" rx="1.5"/>',
+  mono: '<rect x="2" y="6" width="20" height="12" rx="2"/><rect x="9" y="9" width="6" height="6" rx="2"/>',
+  two: '<rect x="2" y="6" width="20" height="12" rx="2"/><rect x="7" y="9" width="10" height="6" rx="2"/>',
+  three: '<rect x="2" y="6" width="20" height="12" rx="2"/><rect x="5" y="9" width="14" height="6" rx="2"/>',
+};
+const icon = (k) => ICON[k] ? `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>` : "";
+
+// a choice: one bar of options, [{label, blurb, icon, active, pick}]. A radio group for the keyboard
 // (W3C APG radio group): Tab stops on the checked option only, the arrow keys move and pick.
 // Only the picked option's line (blurb) shows, under the bar; none picked is "Custom".
 let noteN = 0;
@@ -263,7 +280,7 @@ function optionButtons(label, options, help, key = label) {
   options.forEach((o) => {
     const b = document.createElement("button");
     b.setAttribute("role", "radio"); b.setAttribute("aria-checked", !!o.active);
-    b.innerHTML = `<span>${o.label}</span>`;
+    b.innerHTML = `${icon(o.icon)}<span>${o.label}</span>`;
     b.onclick = () => {
       wrap.querySelectorAll(".opts button").forEach((x) => x.setAttribute("aria-checked", x === b));
       wrap.roving();
@@ -308,7 +325,7 @@ function control(p, group) {
   if (p.type === "choice" && p.options.length <= 3) {
     const w = optionButtons(p.label, p.options.map((o) => {
       const m = o.label.match(/^(.*?)\s*\((.*)\)$/) || [null, o.label, ""];
-      return { label: m[1], blurb: m[2], active: vals[p.name] === o.value,
+      return { label: m[1], blurb: m[2], icon: o.icon, active: vals[p.name] === o.value,
                pick: () => { vals[p.name] = o.value; buildEditor(); edited(); } };   // a grip kind changes the rows under it
     }), p.help);
     w.querySelector("label").append(resetButton(p, () => { vals[p.name] = p.default; buildEditor(); edited(); }));
@@ -463,7 +480,7 @@ function buildEditor() {
 function oneTap(sc, prefix, key) {
   const vals = () => cur().values;
   const on = (o) => Object.entries(o.values).every(([k, v]) => ["slot_d", "grip_r", "r"].includes(k) || vals()[prefix + k] === v);
-  const w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, active: on(o),
+  const w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, icon: o.icon, active: on(o),
     pick: () => { Object.entries(o.values).forEach(([k, v]) => { vals()[prefix + k] = v; }); buildEditor(); edited(); } })), sc.help, key);
   const bs = w.querySelectorAll(".opts button");
   syncs.push(() => { sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o))); w.roving(); });
