@@ -115,7 +115,6 @@ INSERTS = [
             {"label": "Mono", "blurb": "one finger", "values": {"pocket_n": 1, "pocket_w": 22}},
             {"label": "Two", "blurb": "two fingers", "values": {"pocket_n": 1, "pocket_w": 40}},
             {"label": "Three", "blurb": "three fingers", "values": {"pocket_n": 1, "pocket_w": 58}},
-            {"label": "Two pairs", "blurb": "two 2-finger pockets", "values": {"pocket_n": 2, "pocket_w": 40}},
         ]},
         "parts": [{"part": "insert_pocket", "name": "Pocket insert",
                    "supports": INSERT_SUPPORTS, "settings": SOLID}],
