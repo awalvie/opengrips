@@ -636,7 +636,7 @@ function addItem(it) {
 }
 
 function renderKit() {
-  const box = $("kit"); box.innerHTML = "";
+  const box = $("kit"), had = box.contains(document.activeElement); box.innerHTML = "";
   kit.items.forEach((it, n) => {
     const card = document.createElement("div");
     card.className = "card" + (n === kit.sel ? " on" : "");
@@ -659,6 +659,8 @@ function renderKit() {
     card.append(main, copy, rm);
     box.append(card);
   });
+  // the redraw removes the focused button: the keyboard goes on from the picked item
+  if (had) box.querySelectorAll(".card-main")[kit.sel]?.focus();
 }
 
 // everything that shows a name or the kit: list, editor title, partner list, 3D caption, downloads
