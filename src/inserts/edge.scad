@@ -34,6 +34,7 @@ pk_floor = max(floor_t + clear + skin, min(slot_ceil, slot_ceil + slot_d * tan(e
 // more than one edge sets them again around each one.
 $e_d = slot_d; $e_r = grip_r; $e_angle = edge_angle; $e_ergo = ergo; $e_h = slot_h;
 $e_floor_min = floor_t + clear + skin;      // lowest the slot floor goes
+$p_floor = pk_floor; $p_ceil = slot_ceil; $p_mouth = mouth_r;   // pocket floor, ceiling at the lip, mouth round
 back_r = 3;                                  // inside corner at the back of the slot
 ergo_r = 0.5;                                // ergo: the lip radius at the ends grows by this share
 sl_th = 60;                                  // sloper curve: share of the ellipse used, in degrees
@@ -109,11 +110,11 @@ module slot_prof(w, h) translate([0, h/2]) {
 
 // pocket slot, one solid: rounded openings from the face to the back. Toward the face the opening
 // grows by a quarter circle of mouth_r, the mouth round. One loft, because a union of hulls leaves
-// slivers in the browser's renderer.
+// slivers in the browser's renderer. Like the edge sweep, it reads its settings from $ variables.
 module pocket_loft(w, open_r) {
-    floor_z = pk_floor; h = slot_ceil - floor_z;
+    floor_z = $p_floor; h = $p_ceil - floor_z; slot_d = $e_d; edge_angle = $e_angle;
     n = 8; m = 12;                           // rings in the mouth round; steps in each corner arc
-    r = max(0, mouth_r);
+    r = max(0, $p_mouth);
     e = function(y) y < 0 ? r : y >= r ? 0 : r - sqrt(r*r - (r - y)*(r - y));   // mouth offset at y
     ceil_at = function(y) h + (y + 1) / (slot_d + 1) * slot_d * tan(edge_angle);   // tilted ceiling: h at y = -1, h + slot_d tan at the back
     // ring at y: the opening offset by o, ceiling at hc above the floor; counterclockwise, corner arcs of m steps
@@ -134,17 +135,17 @@ module pocket_loft(w, open_r) {
 
 // plan shape of a pocket: square front, round back (a half circle for a mono, a half ellipse when wider)
 module pocket_plan(w) {
-    e = min(w/2, slot_d * 0.6);
+    e = min(w/2, $e_d * 0.6);
     hull() {
-        translate([-w/2, -5]) square([w, 5 + slot_d - e]);
-        translate([0, slot_d - e]) scale([w/2, e]) circle(r = 1, $fn = 96);
+        translate([-w/2, -5]) square([w, 5 + $e_d - e]);
+        translate([0, $e_d - e]) scale([w/2, e]) circle(r = 1, $fn = 96);
     }
 }
 
 // pocket of width w: rounded opening, round back
 module slot_shape(w, open_r) intersection() {
     pocket_loft(w, open_r);
-    translate([0, 0, floor_t + clear + skin]) linear_extrude(ins_top) pocket_plan(w);   // the mouth round stops one skin above the bottom
+    translate([0, 0, $e_floor_min]) linear_extrude(ins_top) pocket_plan(w);   // the mouth round stops at the lowest floor
 }
 
 // edges: the swept slot. Pockets (open_r > 0): the straight slot cut to the pocket plan.
