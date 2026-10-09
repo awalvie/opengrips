@@ -114,7 +114,6 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .pick::after { content: ""; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; pointer-events: none;
                border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-70%) rotate(45deg); }
 
-.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 /* a choice: one sunk bar; the picked option lifts out of it as a soft tint, with no outline */
 .opts { display: flex; gap: 2px; margin-top: 6px; padding: 3px; border-radius: 10px; background: var(--sunk); }
 .opts button { flex: 1 1 0; min-width: 0; padding: 6px 4px; border: 0; border-radius: 8px; background: none;
@@ -174,7 +173,6 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .dfile button.busy::after { content: ""; position: absolute; inset: 0; margin: auto; width: 22px; height: 22px; border-radius: 50%;
                             border: 3px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
 .dfile button { position: relative; }
-#msg { color: var(--err); font-size: 13px; }
 .need { font-size: 13.5px; color: var(--muted); }
 .need ul { padding-left: 18px; margin: 6px 0; }
 .need summary { cursor: pointer; color: var(--fg); padding: 6px 0; }
@@ -186,8 +184,6 @@ footer a { color: inherit; }
        background: var(--panel); border-top: 1px solid var(--line); z-index: 5; }
 #kit-summary { flex: 1; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 480px) { #kit-summary { display: none; } #bar { justify-content: flex-end; } }
-@keyframes flash { 0%, 40% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
-.kitem.new button:first-child { animation: flash 1.6s ease-out; }
 #toast { position: fixed; left: 16px; right: 16px; bottom: 70px; z-index: 6; padding: 10px 14px; border-radius: 8px;
          background: var(--fg); color: var(--bg); font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.25);
          display: flex; align-items: center; gap: 8px; }
