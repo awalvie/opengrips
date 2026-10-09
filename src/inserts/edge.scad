@@ -118,13 +118,13 @@ module pocket_loft(w, open_r) {
     ceil_at = function(y) h + (y + 1) / (slot_d + 1) * slot_d * tan(edge_angle);   // tilted ceiling: h at y = -1, h + slot_d tan at the back
     // ring at y: the opening offset by o, ceiling at hc above the floor; counterclockwise, corner arcs of m steps
     function ring(y, o, hc) = let(a = w/2 + o, zb = floor_z - o, zt = floor_z + hc + o,
-                                  rr = min(open_r + o, a - 0.01, (zt - zb)/2 - 0.01))
+                                  rr = min(open_r + o, a - eps, (zt - zb)/2 - eps))
         [for (c = [[a - rr, zt - rr, 0], [-a + rr, zt - rr, 90], [-a + rr, zb + rr, 180], [a - rr, zb + rr, 270]], j = [0 : m])
             let(q = c[2] + 90 * j / m) [c[0] + rr * cos(q), y, c[1] + rr * sin(q)]];
     // the mouth rings keep the higher of the round and the tilted ceiling; behind the round, the
     // tilted ceiling alone (a small step where a sloper ceiling drops below the round)
     mouth = [for (y = concat([-1], r > 0 ? [for (i = [0 : n]) r * i / n] : [])) ring(y, e(y), max(h, ceil_at(y) - e(y)))];
-    rings = concat(mouth, slot_d > r + 0.02 ? [ring(r + 0.01, 0, ceil_at(r + 0.01)), ring(slot_d, 0, ceil_at(slot_d))] : []);
+    rings = concat(mouth, slot_d > r + 2*eps ? [ring(r + eps, 0, ceil_at(r + eps)), ring(slot_d, 0, ceil_at(slot_d))] : []);
     k = 4 * (m + 1); last = len(rings) - 1;
     polyhedron([for (g = rings) each g], concat(
         [[for (j = [k - 1 : -1 : 0]) j]], [[for (j = [0 : k - 1]) last*k + j]],
@@ -160,7 +160,7 @@ module insert_blank() xz(0, pk_d - clear) translate([0, floor_t + pk_h/2]) rrect
 module size_mark(label, floor_z = pk_floor) {
     mark_z = (floor_t + clear + floor_z) / 2;
     size = min(len(label) > 6 ? 7 : 9, floor_z - floor_t - clear - 3.5);
-    if (size >= 4) translate([0, -0.01, mark_z]) rotate([90, 0, 0]) mirror([0, 0, 1])
+    if (size >= 4) translate([0, -eps, mark_z]) rotate([90, 0, 0]) mirror([0, 0, 1])
         linear_extrude(1) text(label, size = size, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
 }
 

@@ -1,5 +1,7 @@
 // Shared 2D/3D helpers. Axes: X = width, Y = depth (front at y=0, +Y to the back), Z = up.
 
+eps = 0.01;   // a small overlap or gap, so no two faces meet exactly: exact contact leaves slivers in the STL
+
 // rounded rectangle, centred
 module rrect(w, h, r) { offset(r) offset(-r) square([w, h], center = true); }
 

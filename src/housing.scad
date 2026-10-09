@@ -27,9 +27,9 @@ function pyramid_legs() = [for (sx = [-1, 1], l = [[leg_yf, bar_tf, bar_wf], [le
 module anchor_pyramid() {
     p = [0, grip_y, tri_apex];
     for (l = pyramid_legs()) bar(l[0], p, l[1], l[2], bar_r);
-    // the node is 0.02 mm fatter than the bars: faces that meet exactly leave stray triangles in the STL
+    // the node is 2*eps fatter than the bars, so their faces never meet exactly
     hull() for (l = pyramid_legs())
-        bar(p + (l[0] - p) * node_len / norm(l[0] - p), p, l[1] + 0.02, l[2] + 0.02, bar_r);
+        bar(p + (l[0] - p) * node_len / norm(l[0] - p), p, l[1] + 2*eps, l[2] + 2*eps, bar_r);
 }
 
 // Keel: a full-width triangle plate under the housing, with a hole through it. It carries the
@@ -83,8 +83,8 @@ module housing_shell() {
 module pocket_cut() {
     xz(-1, pk_d + 1) translate([0, floor_t + pk_h/2]) rrect(pk_w, pk_h, r_in);
     hull() {
-        xz(-1, 1.01) translate([0, floor_t + pk_h/2]) rrect(pk_w + 2*bevel, pk_h + 2*bevel, r_in + bevel);
-        xz(bevel, 0.01) translate([0, floor_t + pk_h/2]) rrect(pk_w, pk_h, r_in);
+        xz(-1, 1 + eps) translate([0, floor_t + pk_h/2]) rrect(pk_w + 2*bevel, pk_h + 2*bevel, r_in + bevel);
+        xz(bevel, eps) translate([0, floor_t + pk_h/2]) rrect(pk_w, pk_h, r_in);
     }
 }
 

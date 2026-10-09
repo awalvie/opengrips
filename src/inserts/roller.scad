@@ -32,7 +32,7 @@ module insert_roller(nose = cheek_nose) {
         translate([0, grip_y, roll_z]) rotate([0, 90, 0]) cylinder(d = axle_d + clear, h = iw + 2, center = true);
         latch_relief(extra = cheek_t - lt_t - lt_gap + 1, down = true);
         // size mark on the front of the floor, in the middle
-        translate([0, -0.01, z0 + ins_floor/2]) rotate([90, 0, 0]) mirror([0, 0, 1])
+        translate([0, -eps, z0 + ins_floor/2]) rotate([90, 0, 0]) mirror([0, 0, 1])
             linear_extrude(1) text(str("roller ", roll_d, " mm"), size = 4, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
     }
     latch_arm(down = true);

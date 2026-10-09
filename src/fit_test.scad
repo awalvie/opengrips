@@ -33,7 +33,7 @@ module fit_cheek() {
         latch_relief(band = true);
     }
     intersection() { latch_arm(band = true); translate([0, -1, 0]) cube([W, D, H]); }   // the right arm only
-    translate([xo - fit_cw, -fit_tab, fit_cz0]) cube([4, fit_tab + 0.01, fit_cz1 - fit_cz0]);
+    translate([xo - fit_cw, -fit_tab, fit_cz0]) cube([4, fit_tab + eps, fit_cz1 - fit_cz0]);
 }
 
 // the side wall with its window, and a channel that holds the cheek against it with the insert gap
@@ -43,8 +43,8 @@ module fit_channel() {
         translate([x0 - fit_cwall, 0, z0 - fit_cwall]) cube([W/2 - x0 + fit_cwall, D, z1 - z0 + 2*fit_cwall]);
         translate([x0, -1, z0]) cube([pk_w/2 - x0, pk_d + 1, z1 - z0]);
         hull() {   // lead-in for the cheek and its button, like the housing bevel
-            translate([x0 - bevel, -1, z0 - bevel]) cube([pk_w/2 - x0 + 2*bevel, 1.01, z1 - z0 + 2*bevel]);
-            translate([x0, bevel, z0]) cube([pk_w/2 - x0, 0.01, z1 - z0]);
+            translate([x0 - bevel, -1, z0 - bevel]) cube([pk_w/2 - x0 + 2*bevel, 1 + eps, z1 - z0 + 2*bevel]);
+            translate([x0, bevel, z0]) cube([pk_w/2 - x0, eps, z1 - z0]);
         }
         latch_windows();
     }
