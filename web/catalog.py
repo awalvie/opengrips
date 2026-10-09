@@ -61,11 +61,18 @@ HOUSING = {
     "show_if": {"bar_angle": ["anchor", "pyramid"], "keel_hole": ["anchor", "keel"]},
 }
 
-# Flip insert: two flat or ergo edges, one on top and one turned over under it. Each slot has
-# 16.5 mm of room down to the web; the lip radius stops at 3.5 so an ergo lip keeps 16 mm.
-def flip_edge(key, which, depth, radius):
+# Flip insert: two grips, one on top and one turned over under it. Each is a flat or ergo edge,
+# or one pocket. Each slot has 16.5 mm of room down to the web; the lip radius stops at 3.5 so an
+# ergo lip keeps 16 mm. No roller: it does not fit in half the insert.
+def flip_grip(key, which, depth, radius):
     return [
-        num(f"{key}_d", f"{which} edge depth", 6, 30, 1, depth, help="From the lip to the back of the slot.", simple=True),
+        choice(f"{key}_kind", f"{which} grip", [
+            {"value": "edge", "label": "Edge"},
+            {"value": "mono", "label": "Mono pocket"},
+            {"value": "two", "label": "Two-finger pocket"},
+            {"value": "three", "label": "Three-finger pocket"},
+        ], "edge", simple=True),
+        num(f"{key}_d", f"{which} depth", 6, 30, 1, depth, help="From the lip to the back of the slot or pocket.", simple=True),
         num(f"{key}_r", f"{which} lip radius", 0.5, 3.5, 0.5, radius, help="Roundover on the lip. Small is sharp, big is friendly."),
         num(f"{key}_ergo", f"{which} ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers."),
     ]
@@ -74,9 +81,10 @@ def flip_edge(key, which, depth, radius):
 FLIP = {
     "id": "flip",
     "name": "Flip",
-    "blurb": "two edges, turn it over",
+    "blurb": "two grips, turn it over",
     "parts": [{"part": "insert_flip", "name": "Flip insert", "supports": "no supports", "settings": SOLID}],
-    "params": flip_edge("top", "Top", 20, 3) + flip_edge("bot", "Bottom", 10, 2),
+    "params": flip_grip("top", "Top", 20, 3) + flip_grip("bot", "Bottom", 10, 2),
+    "show_if": {"top_ergo": ["top_kind", "edge"], "bot_ergo": ["bot_kind", "edge"]},
 }
 
 INSERTS = [

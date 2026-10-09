@@ -251,7 +251,7 @@
   {
    "id": "flip",
    "name": "Flip",
-   "blurb": "two edges, turn it over",
+   "blurb": "two grips, turn it over",
    "parts": [
     {
      "part": "insert_flip",
@@ -262,15 +262,41 @@
    ],
    "params": [
     {
+     "name": "top_kind",
+     "label": "Top grip",
+     "type": "choice",
+     "options": [
+      {
+       "value": "edge",
+       "label": "Edge"
+      },
+      {
+       "value": "mono",
+       "label": "Mono pocket"
+      },
+      {
+       "value": "two",
+       "label": "Two-finger pocket"
+      },
+      {
+       "value": "three",
+       "label": "Three-finger pocket"
+      }
+     ],
+     "default": "edge",
+     "help": "",
+     "simple": true
+    },
+    {
      "name": "top_d",
-     "label": "Top edge depth",
+     "label": "Top depth",
      "type": "number",
      "min": 6,
      "max": 30,
      "step": 1,
      "default": 20,
      "unit": "mm",
-     "help": "From the lip to the back of the slot.",
+     "help": "From the lip to the back of the slot or pocket.",
      "simple": true
     },
     {
@@ -298,15 +324,41 @@
      "simple": false
     },
     {
+     "name": "bot_kind",
+     "label": "Bottom grip",
+     "type": "choice",
+     "options": [
+      {
+       "value": "edge",
+       "label": "Edge"
+      },
+      {
+       "value": "mono",
+       "label": "Mono pocket"
+      },
+      {
+       "value": "two",
+       "label": "Two-finger pocket"
+      },
+      {
+       "value": "three",
+       "label": "Three-finger pocket"
+      }
+     ],
+     "default": "edge",
+     "help": "",
+     "simple": true
+    },
+    {
      "name": "bot_d",
-     "label": "Bottom edge depth",
+     "label": "Bottom depth",
      "type": "number",
      "min": 6,
      "max": 30,
      "step": 1,
      "default": 10,
      "unit": "mm",
-     "help": "From the lip to the back of the slot.",
+     "help": "From the lip to the back of the slot or pocket.",
      "simple": true
     },
     {
@@ -333,7 +385,17 @@
      "help": "The lip curves this far back in the middle for the longer middle fingers.",
      "simple": false
     }
-   ]
+   ],
+   "show_if": {
+    "top_ergo": [
+     "top_kind",
+     "edge"
+    ],
+    "bot_ergo": [
+     "bot_kind",
+     "edge"
+    ]
+   }
   },
   {
    "id": "pocket",

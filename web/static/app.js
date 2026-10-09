@@ -121,7 +121,10 @@ function nameOf(it) {
   }
   const ang = v.edge_angle > 0 ? ` incut ${v.edge_angle}°` : v.edge_angle < 0 ? ` sloper ${-v.edge_angle}°` : "";
   if (it.insertId === "edge") return `${v.slot_d} mm${v.ergo ? " ergo" : ""} edge${ang}`;
-  if (it.insertId === "flip") return `Flip edge, ${v.top_d} mm${v.top_ergo ? " ergo" : ""} / ${v.bot_d} mm${v.bot_ergo ? " ergo" : ""}`;
+  if (it.insertId === "flip") {
+    const grip = (k) => `${v[k + "_d"]} mm ${v[k + "_kind"] === "edge" ? (v[k + "_ergo"] ? "ergo edge" : "edge") : v[k + "_kind"] + (v[k + "_kind"] === "mono" ? "" : "-finger") + " pocket"}`;
+    return `Flip, ${grip("top")} / ${grip("bot")}`;
+  }
   if (it.insertId === "pocket") {
     const kind = { 22: "mono", 40: "two-finger", 58: "three-finger" }[v.pocket_w] || `${v.pocket_w} mm`;
     const name = `${v.pocket_n > 1 ? v.pocket_n + " × " : ""}${kind} pocket, ${v.slot_d} mm${ang}`;
@@ -594,7 +597,7 @@ function buildNeed() {
   if (roller) steps.push("Roller: drop the roller between the cheeks, push the axle through both cheeks and the roller.");
   if (inserts.length) steps.push("Slide the insert into the housing until both side buttons click.",
                                  "To swap: pinch both buttons, pull the insert out by the grip, push the next one in.");
-  if (flip) steps.push("Flip insert: to use the other edge, take it out, turn it over and push it back in.");
+  if (flip) steps.push("Flip insert: to use the other grip, take it out, turn it over and push it back in.");
   if (housings.length) steps.push("Clip the carabiner to the anchor under the housing. Check it before every session.");
   const list = (xs) => `<ul>${xs.map((x) => `<li>${x}</li>`).join("")}</ul>`;
   $("need").innerHTML = `<details><summary>Hardware and assembly</summary><strong>You also need</strong>${list(need)}`
