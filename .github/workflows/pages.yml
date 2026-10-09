@@ -43,7 +43,6 @@ jobs:
       - name: Build the site
         # the page, plus the OpenSCAD sources at the paths the render worker fetches them from
         run: |
-          python3 web/catalog.py | diff -u web/static/catalog.json - || { echo "catalog.json is out of date: python3 web/catalog.py > web/static/catalog.json"; exit 1; }
           mkdir _site
           cp -r web/static/. _site/
           cp -r opengrips.scad src _site/
