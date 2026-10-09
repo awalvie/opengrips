@@ -65,6 +65,15 @@ I sliced the default parts in PrusaSlicer 2.9.6 with the settings above, PETG at
 
 Automatic supports add about 18 g to the pyramid housing and about 6 g to the roller frame. A housing and one edge insert come to about 180 g, so a 1 kg spool gets you a housing and about ten inserts.
 
+## The fit test
+
+On a new printer, print the fit test before the kit. In the configurator, click "fit test" under Download. You get one zip with four small parts, already the right way up. Use the housing settings above.
+
+- The ring is a thin slice of the housing pocket, and the frame is a thin slice of an insert. Push the frame into the ring. It must slide in without force.
+- The latch channel is a short piece of housing wall with the real window, and the latch cheek is one side of an insert with the real latch arm. Slide the cheek into the channel until the button clicks into the window. Then press the button in and pull the cheek out by its tab.
+
+If a pair sticks, follow step 3 below, then print the fit test again.
+
 ## Checking the fit
 
 1. Slide the insert into the housing. Both side buttons should click into their windows.
