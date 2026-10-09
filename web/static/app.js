@@ -306,7 +306,7 @@ function optionButtons(label, options, help, key = label) {
     wrap.querySelector(".opts").append(b);
   });
   const bs = [...wrap.querySelectorAll(".opts button")], note = wrap.querySelector(".note");
-  // a screen reader reads the note with the group, as it read the line in each button before
+  // a screen reader reads the note with the group
   if (note) { note.id = `note-${++noteN}`; wrap.querySelector(".opts").setAttribute("aria-describedby", note.id); }
   // the checked option takes the Tab stop; with none checked, the first one. The note follows it.
   wrap.roving = () => {

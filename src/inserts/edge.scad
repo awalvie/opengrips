@@ -100,7 +100,6 @@ module edge_slot(w) intersection() {
 }
 
 // slot cross-section, floor at z = 0: flat sides, rounded floor corners, square top corners
-// open_r > 0 (pockets): every corner rounded by open_r instead
 module slot_prof(w, h) translate([0, h/2]) {
     rrect(w, h, slot_r);
     translate([0, h/4]) square([w, h/2], center = true);

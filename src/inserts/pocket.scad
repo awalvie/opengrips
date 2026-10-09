@@ -1,4 +1,4 @@
-// Pocket insert: one to three pockets side by side, cut with the edge slot.
+// Pocket insert: one to three pockets side by side, each a lofted pocket (slot_shape in edge.scad).
 // Mono: 1 x 22 mm. Two-finger: 1 x 40 mm. Three-finger: 1 x 58 mm. Or several pockets in a row.
 // The pockets share the edge settings: depth (slot_d), lip roundover, angle.
 
