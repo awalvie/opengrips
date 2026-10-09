@@ -344,7 +344,7 @@ function control(p, group) {
       const m = o.label.match(/^(.*?)\s*\((.*)\)$/) || [null, o.label, ""];
       return { label: m[1], blurb: m[2], icon: o.icon, active: vals[p.name] === o.value,
                pick: () => { vals[p.name] = o.value; buildEditor(); edited(); } };   // a grip kind changes the rows under it
-    }), p.help);
+    }), p.help, p.name);
     w.querySelector(".lrow").append(resetButton(p, () => { vals[p.name] = p.default; buildEditor(); edited(); }));
     w.dataset.name = p.name; w.hidden = !shown(p, group);
     return w;
