@@ -7,10 +7,12 @@ lt_t = 2.4; lt_gap = 5;                      // arm thickness; room to flex in p
 lt_y0 = 4; lt_y1 = 16;                       // button: front face square (catch), back edge ramped (lead-in)
 lt_ramp = 5;
 
-// housing side: the buttons sit flush in these windows
+// housing side: the buttons sit flush in these windows. A second pair, mirrored about the
+// middle of the pocket, takes the buttons of an insert that is turned over.
 module latch_windows() {
-    for (m = [0, 1]) mirror([m, 0, 0])
-        translate([pk_w/2 - 1, lt_y0 - clear, lt_z0 + 1 - clear]) cube([side_t + 3, lt_y1 - lt_y0 + 2*clear, lt_z1 - lt_z0 - 2 + 2*clear]);
+    for (m = [0, 1], t = [0, 1]) mirror([m, 0, 0])
+        translate([0, 0, floor_t + pk_h/2]) mirror([0, 0, t]) translate([0, 0, -floor_t - pk_h/2])
+            translate([pk_w/2 - 1, lt_y0 - clear, lt_z0 + 1 - clear]) cube([side_t + 3, lt_y1 - lt_y0 + 2*clear, lt_z1 - lt_z0 - 2 + 2*clear]);
 }
 
 // The arm must start on the print bed. Inserts that print upside down (top on the bed) run
