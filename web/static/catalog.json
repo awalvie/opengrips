@@ -117,7 +117,30 @@
     "anchor",
     "keel"
    ]
-  }
+  },
+  "cards": [
+   {
+    "title": "Hanging",
+    "sub": "how the housing holds the carabiner",
+    "params": [
+     "anchor",
+     "bar_angle",
+     "keel_hole"
+    ],
+    "choice": false
+   },
+   {
+    "title": "Walls",
+    "sub": "the box the inserts slide into",
+    "params": [
+     "style",
+     "top_t",
+     "floor_t",
+     "corner"
+    ],
+    "choice": false
+   }
+  ]
  },
  "inserts": [
   {
@@ -246,6 +269,21 @@
      "help": "The lip curves this far back in the middle for the longer middle fingers. The middle gets deeper, the ends shallower and rounder.",
      "simple": false
     }
+   ],
+   "cards": [
+    {
+     "title": "Edge",
+     "sub": "",
+     "params": [
+      "slot_d",
+      "grip_r",
+      "edge_angle",
+      "slot_h",
+      "slot_w",
+      "ergo"
+     ],
+     "choice": true
+    }
    ]
   },
   {
@@ -263,7 +301,7 @@
    "params": [
     {
      "name": "top_kind",
-     "label": "Top grip",
+     "label": "Type",
      "type": "choice",
      "options": [
       {
@@ -377,7 +415,7 @@
     },
     {
      "name": "bot_kind",
-     "label": "Bottom grip",
+     "label": "Type",
      "type": "choice",
      "options": [
       {
@@ -557,6 +595,40 @@
      ],
      "max": 86
     }
+   ],
+   "cards": [
+    {
+     "title": "Top grip",
+     "sub": "faces up",
+     "params": [
+      "top_kind",
+      "top_d",
+      "top_r",
+      "top_ergo",
+      "top_w",
+      "top_pn",
+      "top_pw",
+      "top_pgap",
+      "top_pr"
+     ],
+     "choice": false
+    },
+    {
+     "title": "Bottom grip",
+     "sub": "on the underside: turn the insert over to use it",
+     "params": [
+      "bot_kind",
+      "bot_d",
+      "bot_r",
+      "bot_ergo",
+      "bot_w",
+      "bot_pn",
+      "bot_pw",
+      "bot_pgap",
+      "bot_pr"
+     ],
+     "choice": false
+    }
    ]
   },
   {
@@ -707,6 +779,23 @@
      ],
      "max": 93
     }
+   ],
+   "cards": [
+    {
+     "title": "Pockets",
+     "sub": "",
+     "params": [
+      "slot_d",
+      "pocket_n",
+      "pocket_w",
+      "pocket_gap",
+      "pocket_r",
+      "grip_r",
+      "edge_angle",
+      "slot_h"
+     ],
+     "choice": true
+    }
    ]
   },
   {
@@ -782,6 +871,17 @@
      "unit": "mm",
      "help": "",
      "simple": false
+    }
+   ],
+   "cards": [
+    {
+     "title": "Roller",
+     "sub": "",
+     "params": [
+      "roll_type",
+      "roll_d"
+     ],
+     "choice": true
     }
    ]
   }

@@ -81,7 +81,21 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .card .tool { border-left: 0; color: var(--muted); min-width: 52px; }
 .card .tool:last-child { border-radius: 0 8px 8px 0; }
 .card.on .tool { border-color: var(--accent); }
-#editor .more { width: 100%; margin-top: 4px; color: var(--accent); font-weight: 600; }
+/* the editor: one card per group of settings, a switch for every setting */
+.ecard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 2px 16px 4px; margin: 0 0 14px; }
+.ecard h3 { margin: 12px 0 0; font-size: 17px; }
+.ecard h3 small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); }
+.ecard .param + .param { border-top: 1px solid var(--line); padding-top: 12px; }
+.ecard .more-h { margin: 8px -16px 0; padding: 12px 16px 0; border-top: 6px solid var(--bg); font-size: 12px; font-weight: 600;
+                 letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ecard .more-h + .param { border-top: 0; padding-top: 0; }
+#editor .switch { display: flex; align-items: center; gap: 8px; margin: 0 0 10px auto; padding: 0 2px; border: 0; background: none;
+                  font-size: 14px; font-weight: 600; }
+.switch .track { width: 36px; height: 22px; border-radius: 11px; background: var(--edge); position: relative; flex: none; }
+.switch .knob { position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--panel); }
+.switch[aria-checked="true"] .track { background: var(--accent); }
+.switch[aria-checked="true"] .knob { left: 17px; background: var(--accent-fg); }
+@media (prefers-reduced-motion: no-preference) { .switch .track, .switch .knob { transition: background-color .15s, left .15s; } }
 .addrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .addrow button { border-style: dashed; font-weight: 600; }
 /* what the 3D view shows the item with: a small label over the value, our own arrow */

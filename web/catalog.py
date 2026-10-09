@@ -20,6 +20,13 @@ def choice(name, label, options, default, help="", simple=False):
             "default": default, "help": help, "simple": simple}
 
 
+# The editor shows each housing or insert as cards: a title, an optional line under it, and the
+# settings in it. "choice": the card also holds the one-tap choice (Shape, Fingers or Roller).
+# A new setting goes in a card here; the page needs no change.
+def card(title, params, sub="", choice=False):
+    return {"title": title, "sub": sub, "params": [p["name"] if isinstance(p, dict) else p for p in params], "choice": choice}
+
+
 EDGE_SHAPE = [
     num("slot_d", "Edge depth", 6, 35, 1, 20, help="From the lip to the back of the slot.", simple=True),
     num("grip_r", "Lip radius", 0.5, 12, 0.5, 3, help="Roundover on the lip. Small is sharp, big is friendly. Slopers have no lip."),
@@ -59,6 +66,8 @@ HOUSING = {
         num("corner", "Corner radius", 3, 12, 0.5, 6, help="Rounding of the housing corners, seen from the front."),
     ],
     "show_if": {"bar_angle": ["anchor", "pyramid"], "keel_hole": ["anchor", "keel"]},
+    "cards": [card("Hanging", ["anchor", "bar_angle", "keel_hole"], "how the housing holds the carabiner"),
+              card("Walls", ["style", "top_t", "floor_t", "corner"], "the box the inserts slide into")],
 }
 
 # Flip insert: two grips, one on top and one turned over under it. Each is a flat or ergo edge,
@@ -70,7 +79,7 @@ FLIP_SPAN = 86   # widest pocket row: its mouth round stays clear of the latch r
 
 def flip_grip(key, which, depth, radius):
     return [
-        choice(f"{key}_kind", f"{which} grip", [
+        choice(f"{key}_kind", "Type", [
             {"value": "edge", "label": "Edge"},
             {"value": "pocket", "label": "Pockets"},
         ], "edge", simple=True),
@@ -98,6 +107,8 @@ FLIP = {
     "params": flip_grip("top", "Top", 20, 3) + flip_grip("bot", "Bottom", 10, 2),
     "show_if": flip_show_if("top") | flip_show_if("bot"),
     "spans": [{"names": [f"{k}_pn", f"{k}_pw", f"{k}_pgap"], "max": FLIP_SPAN} for k in ("top", "bot")],
+    "cards": [card("Top grip", flip_grip("top", "", 0, 0), "faces up"),
+              card("Bottom grip", flip_grip("bot", "", 0, 0), "on the underside: turn the insert over to use it")],
 }
 
 INSERTS = [
@@ -118,6 +129,7 @@ INSERTS = [
             num("slot_w", "Edge width", 40, MAX_W, 1, 92),
             num("ergo", "Ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers. The middle gets deeper, the ends shallower and rounder."),
         ],
+        "cards": [card("Edge", ["slot_d", "grip_r", "edge_angle", "slot_h", "slot_w", "ergo"], choice=True)],
     },
     FLIP,
     {
@@ -139,6 +151,7 @@ INSERTS = [
         ] + POCKET_SHAPE,
         # a pocket row must fit: count * width + (count - 1) * wall <= max
         "spans": [{"names": ["pocket_n", "pocket_w", "pocket_gap"], "max": MAX_W}],
+        "cards": [card("Pockets", ["slot_d", "pocket_n", "pocket_w", "pocket_gap", "pocket_r", "grip_r", "edge_angle", "slot_h"], choice=True)],
     },
     {
         "id": "roller",
@@ -160,6 +173,7 @@ INSERTS = [
             ], "unlevel"),
             num("roll_d", "Diameter", 24, 32, 1, 28),
         ],
+        "cards": [card("Roller", ["roll_type", "roll_d"], choice=True)],
     },
 ]
 

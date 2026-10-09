@@ -380,7 +380,6 @@ function refreshVisibility() {
 }
 
 // the editor shows the selected item only. Simple: the main choices. Advanced: every setting.
-const inMode = (params) => params.filter((p) => mode === "advanced" || p.simple);
 let syncChoice = null;   // re-marks the Shape, Fingers or Roller button after a slider moves
 
 // a rebuild replaces every control, so keyboard focus would fall back to the page. Note where it
@@ -399,8 +398,29 @@ function restoreFocus(f) {
   // a Reset button hides once used: then the row's checked option, or its first control
   const el = [f.id && $(f.id), row && row.querySelectorAll("button, input, select")[f.n],
               row && row.querySelector('[aria-checked="true"]'), row && row.querySelector("button, input, select"),
-              box.querySelector(".more")].find(seen);
+              $("mode-switch")].find(seen);
   if (el) el.focus();
+}
+
+// the settings of one housing or insert, as the cards in its catalog entry. Simple mode shows the
+// main settings; All settings adds the rest under "More settings" in each card. choiceEl: the
+// one-tap choice (Shape, Fingers or Roller), in the card marked choice; skip: settings it covers.
+function buildCards(box, def, choiceEl, skip = () => false) {
+  def.cards.forEach((c) => {
+    const ps = c.params.map((n) => specIn(def, n)).filter((p) => !skip(p));
+    const main = ps.filter((p) => p.simple), more = mode === "advanced" ? ps.filter((p) => !p.simple) : [];
+    if (!main.length && !more.length && !(c.choice && choiceEl)) return;
+    const card = document.createElement("section");
+    card.className = "ecard";
+    card.innerHTML = `<h3>${c.title}${c.sub ? `<small>${c.sub}</small>` : ""}</h3>`;
+    if (c.choice && choiceEl) card.append(choiceEl);
+    main.forEach((p) => card.append(control(p, def)));
+    if (more.length) {
+      card.insertAdjacentHTML("beforeend", `<h4 class="more-h">More settings</h4>`);
+      more.forEach((p) => card.append(control(p, def)));
+    }
+    box.append(card);
+  });
 }
 
 function buildEditor() {
@@ -409,14 +429,15 @@ function buildEditor() {
   const it = cur();
   syncChoice = null;
   if (!it) { box.innerHTML = `<p class="hint">Your kit is empty. Add an insert or a housing above.</p>`; return; }
-  if (it.type === "housing") {
-    inMode(cat.housing.params).forEach((p) => box.append(control(p, cat.housing)));
-  } else buildInsertEditor(box, it);
-  // the way between the two modes sits right under the settings
-  const more = document.createElement("button");
-  more.className = "more";
-  more.textContent = mode === "simple" ? "Show all settings" : "Show fewer settings";
-  more.onclick = () => { setMode(mode === "simple" ? "advanced" : "simple"); };
+  // Simple or every setting: a switch, it applies at once (W3C APG switch pattern)
+  const sw = document.createElement("button");
+  sw.id = "mode-switch"; sw.className = "switch"; sw.setAttribute("role", "switch");
+  sw.setAttribute("aria-checked", mode === "advanced");
+  sw.innerHTML = `<span class="track" aria-hidden="true"><span class="knob"></span></span>All settings`;
+  sw.onclick = () => { setMode(mode === "simple" ? "advanced" : "simple"); };
+  box.append(sw);
+  if (it.type === "housing") buildCards(box, cat.housing, null);
+  else buildInsertEditor(box, it);
   // every setting back to its default; an insert keeps its kind
   const all = document.createElement("button");
   all.id = "reset-all"; all.textContent = "Reset all to defaults";
@@ -426,7 +447,7 @@ function buildEditor() {
     kit.items[kit.sel] = it.type === "housing" ? newHousing() : newInsert(it.insertId);
     buildEditor(); edited(); done();
   };
-  box.append(more, all);
+  box.append(all);
   restoreFocus(spot);
 }
 
@@ -441,20 +462,22 @@ function buildInsertEditor(box, it) {
   const kinds = optionButtons("Insert", cat.inserts.map((i) => ({
     label: i.name, active: i.id === it.insertId, pick: () => pickKind(i.id) })), `${def.name}: ${def.blurb}.`);
   kinds.querySelector(".opts").classList.add("row");
-  box.append(kinds);
+  const head = document.createElement("section");
+  head.className = "ecard"; head.innerHTML = `<h3 class="sr">Insert</h3>`; head.append(kinds);
+  box.append(head);
   const sc = def.simple_choice;
   // depth and lip radius are only a starting point, the slider changes them without changing the shape
   const on = (o) => Object.entries(o.values).every(([k, v]) => k === "slot_d" || k === "grip_r" || cur().values[k] === v);
+  let w = null;
   if (sc) {
-    const w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, active: on(o),
+    w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, active: on(o),
       pick: () => { Object.assign(cur().values, o.values); buildEditor(); edited(); } })));
     const bs = w.querySelectorAll(".opts button");
     syncChoice = () => { sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o))); w.roving(); };
-    box.append(w);
   }
   // a choice that the buttons above already set (Unlevel or Straight) is not shown twice
   const covered = (p) => p.type === "choice" && sc && sc.options.every((o) => p.name in o.values);
-  inMode(def.params).filter((p) => !covered(p)).forEach((p) => box.append(control(p, def)));
+  buildCards(box, def, w, covered);
   fitPockets();
 }
 

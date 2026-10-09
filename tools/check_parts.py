@@ -214,6 +214,11 @@ def main():
     a = ap.parse_args()
     if json.loads((ROOT / "web/static/catalog.json").read_text()) != json.loads(json.dumps(catalog.catalog())):
         sys.exit("web/static/catalog.json is out of date: python3 web/catalog.py > web/static/catalog.json")
+    # the editor draws the cards, so a setting in no card, or in two, would be missing or doubled on the page
+    for d in [catalog.HOUSING] + catalog.INSERTS:
+        carded = [n for c in d["cards"] for n in c["params"]]
+        if sorted(carded) != sorted(p["name"] for p in d["params"]):
+            sys.exit(f"{d.get('id', 'housing')}: every setting must be in exactly one card in web/catalog.py")
     engines = ("native", "wasm") if a.engine == "both" else (a.engine,)
     todo = [(e, part, params) for e in engines for part, params in cases()]
     failed = 0
