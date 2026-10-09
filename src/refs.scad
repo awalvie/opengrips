@@ -2,7 +2,7 @@
 
 module finger() {
     // comes down the front face, fingertip hooks up into the slot
-    fx = 20; r = 7.5; tipz = e_ceil - r;
+    fx = 20; r = 7.5; tipz = e_ceil() - r;
     seg([fx, edge_sb + slot_d - 1 - r, tipz], [fx, -9, tipz], 15);
     seg([fx, -9, tipz], [fx, -10, H + 4], 16);
     seg([fx, -10, H + 4], [fx, -26, H + 40], 18);

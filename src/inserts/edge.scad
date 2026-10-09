@@ -30,23 +30,27 @@ pk_floor = max(floor_t + clear + skin, min(slot_ceil, slot_ceil + slot_d * tan(e
 // Ergo (after the Lattice MXEdge): the lip curves back in the middle by ergo, the middle is
 //   deeper and the ends shallower (by up to a quarter of the depth), and the ends get a bigger lip radius.
 // Every edge has a rounded inside corner at the back, so the fingertips sit on no sharp corner.
+// The sweep reads its settings from $ variables. They default to the settings above; a part with
+// more than one edge sets them again around each one.
+$e_d = slot_d; $e_r = grip_r; $e_angle = edge_angle; $e_ergo = ergo; $e_h = slot_h;
+$e_floor_min = floor_t + clear + skin;      // lowest the slot floor goes
 back_r = 3;                                  // inside corner at the back of the slot
 ergo_r = 0.5;                                // ergo: the lip radius at the ends grows by this share
 sl_th = 60;                                  // sloper curve: share of the ellipse used, in degrees
-function ergo_f(x, w) = ergo > 0 ? max(0, 1 - pow(2 * x / w, 2)) : 0;   // 1 in the middle, 0 at the ends
-function e_depth(f) = slot_d + min(ergo, slot_d / 2) * (f - 0.5);
-function e_rad(f) = grip_r * (1 + (ergo > 0 ? ergo_r * (1 - f) : 0));
+function ergo_f(x, w) = $e_ergo > 0 ? max(0, 1 - pow(2 * x / w, 2)) : 0;   // 1 in the middle, 0 at the ends
+function e_depth(f) = $e_d + min($e_ergo, $e_d / 2) * (f - 0.5);
+function e_rad(f) = $e_r * (1 + ($e_ergo > 0 ? ergo_r * (1 - f) : 0));
 function e_br(dep) = min(back_r, dep / 3);  // a short slot gets a smaller back corner
-e_dmax = e_depth(ergo > 0 ? 1 : 0.5);
-e_dmin = e_depth(ergo > 0 ? 0 : 0.5);
+function e_dmax() = e_depth($e_ergo > 0 ? 1 : 0.5);
+function e_dmin() = e_depth($e_ergo > 0 ? 0 : 0.5);
 // lip radius of the sloper curve at the face is Bv^2 / A = D tan^2(angle) / 1.5
-sloper = edge_angle < 0 && e_dmin * pow(tan(-edge_angle), 2) / 1.5 >= grip_r;
-e_lip_t = sloper ? 0 : e_rad(0) / tan((90 - edge_angle) / 2);
+function sloper() = $e_angle < 0 && e_dmin() * pow(tan(-$e_angle), 2) / 1.5 >= $e_r;
+function e_lip_t() = sloper() ? 0 : e_rad(0) / tan((90 - $e_angle) / 2);
 // heights: the ceiling at the lip (round lip) or the top of the curve on the face (sloper)
-e_ceil = ins_top - max(rail_t, e_lip_t + 1) - e_dmax * max(0, tan(edge_angle));
-e_back_top = e_ceil + e_dmax * tan(edge_angle);    // lowest top of the back wall
+function e_ceil() = ins_top - max(rail_t, e_lip_t() + 1) - e_dmax() * max(0, tan($e_angle));
+function e_back_top() = e_ceil() + e_dmax() * tan($e_angle);    // lowest top of the back wall
 // the slot floor keeps one skin above the insert bottom; a steep or deep edge gets a lower slot instead
-e_floor = max(floor_t + clear + skin, min(e_ceil, e_back_top) - slot_h);
+function e_floor() = max($e_floor_min, min(e_ceil(), e_back_top()) - $e_h);
 e_top = ins_top + 1;
 
 function arc(c, r, a0, a1, n) = [for (i = [0 : n]) c + r * [cos(a0 + (a1 - a0) * i / n), sin(a0 + (a1 - a0) * i / n)]];
@@ -58,8 +62,9 @@ function back_fillet(B, a, r, n = 6) = let(u = [-cos(a), -sin(a)], phi = 90 - a)
 
 // side profile of the slot for one slice: f is the ergo weight (1 in the middle), s how far back the lip is.
 // Counterclockwise in (y, z), lip at y = s, open to the front.
-function e_prof(f, n = 16) = let(s = ergo * f, dep = e_depth(f), D = dep + s, br = e_br(dep))
-    sloper ? let(
+function e_prof(f, n = 16) = let(s = $e_ergo * f, dep = e_depth(f), D = dep + s, br = e_br(dep),
+                                 e_ceil = e_ceil(), e_floor = e_floor(), edge_angle = $e_angle)
+    sloper() ? let(
         A = dep / (1 - cos(sl_th)), Bv = dep * tan(-edge_angle) / sin(sl_th),
         slope = atan(-Bv * cos(sl_th) / (A * sin(sl_th))),
         fil = back_fillet([D, e_ceil - Bv * sin(sl_th)], slope, br),
@@ -79,7 +84,7 @@ function e_prof(f, n = 16) = let(s = ergo * f, dep = e_depth(f), D = dep + s, br
 
 // the profiles swept across the width as one solid, smooth along the ergo curve
 module e_sweep(w) {
-    n = ergo > 0 ? 32 : 1;
+    n = $e_ergo > 0 ? 32 : 1;
     xs = [for (i = [0 : n]) -w/2 - 1 + (w + 2) * i / n];
     profs = [for (x = xs) e_prof(ergo_f(x, w))];
     m = len(profs[0]);
@@ -92,7 +97,7 @@ module e_sweep(w) {
 // edge slot of width w: the sweep, with rounded floor corners at the two ends
 module edge_slot(w) intersection() {
     e_sweep(w);
-    xz(-2, pk_d + 4) translate([0, e_floor]) slot_prof(w, e_top - e_floor + 2);
+    xz(-2, pk_d + 4) translate([0, e_floor()]) slot_prof(w, e_top - e_floor() + 2);
 }
 
 // slot cross-section, floor at z = 0: flat sides, rounded floor corners, square top corners
@@ -184,7 +189,7 @@ module insert_edge() {
     difference() {
         insert_blank();
         slot_cut();
-        size_mark(str(slot_d, " mm", angle_label()), e_floor);
+        size_mark(str(slot_d, " mm", angle_label()), e_floor());
         latch_relief();
     }
     latch_arm();
