@@ -58,7 +58,7 @@ openscad -D 'part="insert_edge"' -D slot_d=15 -o edge.stl opengrips.scad
 
 To run the configurator locally, start `python3 web/server.py` and open http://localhost:8000. `web/catalog.py` lists what it offers.
 
-`python3 tools/check_parts.py` renders every preset and the extremes of each setting, and checks that the parts still hold together. It needs OpenSCAD and Python with trimesh, or run `nix develop` to get both.
+`python3 tools/check_parts.py` renders every preset and the extremes of each setting, and checks that the parts still hold together. It needs OpenSCAD, Node.js, and Python with trimesh and manifold3d, or run `nix develop` to get them all. Add `-e native` to skip the Node.js renderer.
 
 If you find a problem or print one, [open an issue](https://github.com/awalvie/opengrips/issues).
 
