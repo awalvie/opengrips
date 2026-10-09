@@ -120,7 +120,9 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
                 border: 1px solid var(--edge); background: var(--panel); color: var(--fg); }
 .param p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
 
-.hint a { color: var(--accent); }
+.hint a, .hint .inline { color: var(--accent); }
+/* a button that reads as a word in a sentence: it does something, so it is not a link */
+.inline { display: inline; min-height: 0; padding: 0; border: 0; background: none; font: inherit; text-decoration: underline; cursor: pointer; }
 .warn { margin: 4px 0 8px; padding: 8px 10px; border-left: 3px solid var(--err); background: var(--panel); font-size: 13px; }
 .ditem { margin: 6px 0; }
 .dfile { display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line);
