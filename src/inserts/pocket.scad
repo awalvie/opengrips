@@ -8,7 +8,7 @@ pocket_gap = 10;                             // wall between pockets
 pocket_r = 8;                                // corner radius of the opening, seen from the front; the back is round
 
 module insert_pocket() {
-    span = pocket_n * pocket_w + (pocket_n - 1) * pocket_gap;
+    span = row_span(pocket_n, pocket_w, pocket_gap);
     mouth_z = max(ins_bot + skin, pk_floor - mouth_r);  // the mouth round reaches mouth_r under the floor
     difference() {
         insert_blank();

@@ -113,6 +113,11 @@ def down(mesh, x, y):
     return [top - d for d in hits(mesh, np.array([x, y, top]), np.array([0, 0, -1]))]
 
 
+def first_pocket_x(n, w, gap):
+    """The middle of the first pocket from the left, in a row centred on x = 0."""
+    return (w - (n * w + (n - 1) * gap)) / 2
+
+
 def check_slot(mesh, part, params):
     """Problems with the slot of an edge or pocket insert."""
     spec = catalog.all_params()
@@ -123,7 +128,7 @@ def check_slot(mesh, part, params):
     x, w, r = 0, v["slot_w"], 4   # r: slot_r in src/inserts/edge.scad
     if part == "insert_pocket":
         w, r = v["pocket_w"], v["pocket_r"]
-        x = (w - (v["pocket_n"] * w + (v["pocket_n"] - 1) * v["pocket_gap"])) / 2
+        x = first_pocket_x(v["pocket_n"], w, v["pocket_gap"])
     # depth: the deepest opening seen from the front
     depth = max((hits(mesh, np.array([x, -5, z]), np.array([0, 1, 0])) or [0])[0] - 5
                 for z in np.arange(bottom + 0.25, top, 0.25))
@@ -182,7 +187,7 @@ def check_flip(mesh, params):
         else:
             found = check_slot(half, "insert_pocket", {"slot_d": g("d"), "pocket_n": g("pn"), "pocket_w": g("pw"),
                                                       "pocket_gap": g("pgap"), "pocket_r": g("pr")})
-            x = (g("pw") - (g("pn") * g("pw") + (g("pn") - 1) * g("pgap"))) / 2   # the first pocket from the left
+            x = first_pocket_x(g("pn"), g("pw"), g("pgap"))
         # room under the grip, half way back, where the ergo lip sits furthest back
         ds = down(half, x, (g("ergo") if kind == "edge" else 0) + g("d") / 2)
         if len(ds) != 4:

@@ -28,7 +28,7 @@ module flip_grip(kind, d, r, e, w, pn, pw, pgap, pr)
                 linear_extrude(pk_d) text(str(d, " mm"), size = 7, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
         }
     } else {
-        span = pn * pw + (pn - 1) * pgap;
+        span = row_span(pn, pw, pgap);
         for (i = [0 : pn - 1]) translate([-span/2 + pw/2 + i * (pw + pgap), 0, 0]) slot_shape(pw, pr);
         // label on the front face beside the pockets (their backs are round), clear of the latch
         // relief; a row too wide for it gets none
