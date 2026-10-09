@@ -1,7 +1,7 @@
 <div align="center">
   <img src="web/static/icon.svg" width="96" alt="opengrips icon">
   <h1>opengrips</h1>
-  <p>A no-hang lift block you can print yourself, with grips you swap by hand.</p>
+  <p>A lift block for finger training that you can print yourself, with grips you swap by hand. Think of a portable hangboard.</p>
   <p>
     <a href="https://awalvie.github.io/opengrips/">Configurator</a> ·
     <a href="PRINTING.md">Printing guide</a> ·
