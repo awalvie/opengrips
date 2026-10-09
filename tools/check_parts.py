@@ -32,7 +32,6 @@ import catalog  # noqa: E402
 MIN_WALL = 1.5   # thinnest wall a check accepts: under the slot and at the slot ends
 MIN_RAIL = 3     # thinnest rail over the slot at the face: half of rail_t, as an edge's lip round climbs into it
 MIN_ROOM = 16    # least finger room in a flip insert slot: the lowest slot_h an edge insert takes
-FLIP_ZC = 34     # middle of the flip insert height: floor_t + pk_h / 2 in src/config.scad
 
 
 def cases():
@@ -63,6 +62,7 @@ def cases():
         top = dict(zip(("top_d", "top_r", "top_ergo"), values))
         bot = {k.replace("top", "bot"): flip[k]["min"] + flip[k]["max"] - v for k, v in top.items()}
         out.append(("insert_flip", top | bot))
+    out.append(("insert_flip", {"floor_t": spec["floor_t"]["max"]}))   # the insert sits higher in a thicker housing floor
     pocket = next(i for i in catalog.INSERTS if i["id"] == "pocket")
     out.append(("insert_pocket", {"pocket_w": pocket["max_span"]}))
     return out
@@ -149,8 +149,9 @@ def check_flip(mesh, params):
     """Problems with the two edges of a flip insert: each half is checked as an edge insert, and
     each slot keeps MIN_ROOM for the fingers."""
     v = {p["name"]: params.get(p["name"], p["default"]) for p in catalog.FLIP["params"]}
-    turn = trimesh.transformations.rotation_matrix(np.pi, [0, 1, 0], [0, 0, FLIP_ZC])
-    box = trimesh.creation.box(bounds=[[-100, -10, FLIP_ZC], [100, 100, 100]])
+    zc = mesh.bounds[:, 2].mean()   # the insert is as tall above its middle as below it, at any floor_t
+    turn = trimesh.transformations.rotation_matrix(np.pi, [0, 1, 0], [0, 0, zc])
+    box = trimesh.creation.box(bounds=[[-100, -10, zc], [100, 100, 100]])
     problems = []
     for key in ("top", "bot"):
         m = mesh.copy()
