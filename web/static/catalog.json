@@ -966,12 +966,6 @@
    ]
   }
  ],
- "refs": [
-  {
-   "part": "carabiner",
-   "name": "Carabiner"
-  }
- ],
  "fit_test": [
   {
    "part": "fit_ring",
