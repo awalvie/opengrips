@@ -21,7 +21,7 @@ This is a prototype, and I haven't load-tested it yet. Print and use it at your 
 ## What you can make
 
 - Edges from 6 to 35 mm deep: flat, ergo, incut up to 20°, or slopers down to 45°.
-- Flip inserts: two flat or ergo edges, 6 to 30 mm deep, in one insert. Turn it over to switch.
+- Flip inserts: two grips in one insert, each a flat or ergo edge or a mono, two-finger or three-finger pocket, 6 to 30 mm deep. Turn it over to switch.
 - Pockets: mono, two-finger, three-finger, or up to three side by side.
 - Rollers: unlevel or straight.
 - Two anchors under the housing: a pyramid of four bars, or a keel plate with a hole.
@@ -45,7 +45,7 @@ The [printing guide](PRINTING.md) has the settings, where the supports go, and h
 
 1. For the roller, drop it between the cheeks and push the axle through.
 2. Slide the insert into the housing until both side buttons click.
-3. To swap it, pinch both buttons and pull the insert out by the grip. To use the other edge of a flip insert, turn it over and push it back in.
+3. To swap it, pinch both buttons and pull the insert out by the grip. To use the other grip of a flip insert, turn it over and push it back in.
 4. Clip the carabiner to the anchor under the housing.
 
 ## Working on it
