@@ -422,8 +422,11 @@ function buildInsertEditor(box, it) {
     const done = undoable(`${nameOf(cur())} is now ${insertDef(id).name.toLowerCase()}.`, true);
     kit.items[kit.sel] = newInsert(id); buildEditor(); edited(); done();
   };
-  box.append(optionButtons("Kind", cat.inserts.map((i) => ({
-    label: i.name, blurb: i.blurb, active: i.id === it.insertId, pick: () => pickKind(i.id) }))));
+  // one short word each, in one row; the line under it says what the picked insert is
+  const kinds = optionButtons("Insert", cat.inserts.map((i) => ({
+    label: i.name, active: i.id === it.insertId, pick: () => pickKind(i.id) })), `${def.name}: ${def.blurb}.`);
+  kinds.querySelector(".opts").classList.add("row");
+  box.append(kinds);
   const sc = def.simple_choice;
   // depth and lip radius are only a starting point, the slider changes them without changing the shape
   const on = (o) => Object.entries(o.values).every(([k, v]) => k === "slot_d" || k === "grip_r" || cur().values[k] === v);

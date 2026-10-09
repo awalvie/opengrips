@@ -99,6 +99,8 @@ section h2 b { color: var(--fg); text-transform: none; letter-spacing: 0; font-s
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .opts { display: grid; gap: 6px; margin-top: 6px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 .opts.three { grid-template-columns: repeat(3, 1fr); }
+.opts.row { grid-auto-flow: column; grid-auto-columns: 1fr; grid-template-columns: none; }
+.opts.row button { text-align: center; padding: 10px 4px; }
 .opts button { text-align: left; padding: 10px 12px; }
 .opts button strong { display: block; }
 .opts button small { color: var(--muted); }
