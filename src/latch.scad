@@ -17,23 +17,24 @@ module latch_windows() {
 
 // The arm must start on the print bed. Inserts that print upside down (top on the bed) run
 // the arm up to the insert top; inserts that print upright (down = true) run it down to the floor.
+// Inserts that print on their back (band = true) grow the arm from its root at the back: it keeps its band.
 lt_bot = floor_t + clear;                    // insert bottom
 lt_top = floor_t + pk_h - clear;             // insert top
 
 // insert side: room for the arms to flex. extra widens it inward, so a thin cheek leaves no sliver.
-module latch_relief(extra = 0, down = false) {
+module latch_relief(extra = 0, down = false, band = false) {
     xo = pk_w/2 - clear;
     z0 = down ? lt_bot - 1 : lt_z0 - 1;
-    z1 = down ? lt_z1 + 1 : lt_top + 1;
+    z1 = down || band ? lt_z1 + 1 : lt_top + 1;
     for (m = [0, 1]) mirror([m, 0, 0])
         translate([xo - lt_t - lt_gap - extra, -1, z0]) cube([lt_t + lt_gap + extra + 1, lt_len + 1, z1 - z0]);
 }
 
 // insert side: arms and buttons. The button side that faces the bed has a 45 degree chamfer.
-module latch_arm(down = false) {
+module latch_arm(down = false, band = false) {
     xo = pk_w/2 - clear; bh = W/2 - xo - 0.3;   // button face just inside the housing side
     z0 = down ? lt_bot : lt_z0;
-    z1 = down ? lt_z1 : lt_top;
+    z1 = down || band ? lt_z1 : lt_top;
     b0 = lt_z0 + 1; b1 = lt_z1 - 1;             // button height
     for (m = [0, 1]) mirror([m, 0, 0]) {
         intersection() {   // the insert has rounded corners; keep the arm inside them

@@ -2,10 +2,11 @@
 
 Usage: python3 tools/check_parts.py [-j JOBS]
 
-Cases: every anchor, every preset, and the corners of the edge and pocket ranges in web/catalog.py.
+Cases: every anchor, every preset, and the corners of the edge, pocket and flip ranges in web/catalog.py.
 Checks: one watertight body. Edges and pockets also keep their depth, a floor under the slot, a
 rail over the slot at the face, a wall under the size mark, and a wall between the slot end and
-the latch arm. Exits 1 if any check fails.
+the latch arm. Each edge of a flip insert gets the edge checks and keeps room for the fingers.
+Exits 1 if any check fails.
 """
 import argparse
 import itertools
@@ -25,6 +26,8 @@ import catalog  # noqa: E402
 
 MIN_WALL = 1.5   # thinnest wall a check accepts: under the slot and at the slot ends
 MIN_RAIL = 3     # thinnest rail over the slot at the face: half of rail_t, as an edge's lip round climbs into it
+MIN_ROOM = 16    # least finger room in a flip insert slot: the lowest slot_h an edge insert takes
+FLIP_ZC = 34     # middle of the flip insert height: floor_t + pk_h / 2 in src/config.scad
 
 
 def cases():
@@ -48,6 +51,13 @@ def cases():
         out.append(("insert_edge", params))
         out.append(("insert_pocket", params))
     out.append(("insert_edge", {"slot_w": spec["slot_w"]["max"]}))
+    # flip: every corner of the top edge, with the bottom edge at the opposite corner
+    out.append(("insert_flip", {}))
+    flip = {p["name"]: p for p in catalog.FLIP["params"]}
+    for values in itertools.product(*((flip[f"top_{n}"]["min"], flip[f"top_{n}"]["max"]) for n in ("d", "r", "ergo"))):
+        top = dict(zip(("top_d", "top_r", "top_ergo"), values))
+        bot = {k.replace("top", "bot"): flip[k]["min"] + flip[k]["max"] - v for k, v in top.items()}
+        out.append(("insert_flip", top | bot))
     pocket = next(i for i in catalog.INSERTS if i["id"] == "pocket")
     out.append(("insert_pocket", {"pocket_w": pocket["max_span"]}))
     return out
@@ -127,6 +137,29 @@ def check_slot(mesh, part, params):
     return problems
 
 
+def check_flip(mesh, params):
+    """Problems with the two edges of a flip insert: each half is checked as an edge insert, and
+    each slot keeps MIN_ROOM for the fingers."""
+    v = {p["name"]: params.get(p["name"], p["default"]) for p in catalog.FLIP["params"]}
+    turn = trimesh.transformations.rotation_matrix(np.pi, [0, 1, 0], [0, 0, FLIP_ZC])
+    box = trimesh.creation.box(bounds=[[-100, -10, FLIP_ZC], [100, 100, 100]])
+    problems = []
+    for key in ("top", "bot"):
+        m = mesh.copy()
+        if key == "bot":
+            m.apply_transform(turn)
+        half = trimesh.boolean.intersection([m, box], engine="manifold")
+        found = check_slot(half, "insert_edge", {"slot_d": v[f"{key}_d"]})
+        # room under the grip, half way back in the middle, where the ergo lip sits furthest back
+        ds = down(half, 0, v[f"{key}_ergo"] + v[f"{key}_d"] / 2)
+        if len(ds) != 4:
+            found.append("no slot half way back")
+        elif ds[1] - ds[2] < MIN_ROOM:
+            found.append(f"finger room {ds[1] - ds[2]:.1f} mm")
+        problems += [f"{key}: {p}" for p in found]
+    return problems
+
+
 def check(part, params, mesh):
     problems = []
     bodies = mesh.split(only_watertight=False)
@@ -136,6 +169,8 @@ def check(part, params, mesh):
         problems.append("not watertight")
     if part in ("insert_edge", "insert_pocket"):
         problems += check_slot(mesh, part, params)
+    if part == "insert_flip":
+        problems += check_flip(mesh, params)
     return problems
 
 

@@ -13,6 +13,7 @@ include <src/housing.scad>
 include <src/inserts/edge.scad>
 include <src/inserts/pocket.scad>
 include <src/inserts/roller.scad>
+include <src/inserts/flip.scad>
 include <src/refs.scad>
 
 // for_print = true turns a printed part to the orientation in its print note and puts it on z = 0.
@@ -23,6 +24,7 @@ module on_bed() {
     else if (part == "housing") translate([0, 0, D]) rotate([-90, 0, 0]) children();   // back face down, pocket opening up
     else if (part == "insert_edge" || part == "insert_pocket")
         translate([0, 0, floor_t + pk_h - clear]) rotate([180, 0, 0]) children();      // top face down
+    else if (part == "insert_flip") translate([0, 0, pk_d - clear]) rotate([-90, 0, 0]) children();   // on its back, front up
     else if (part == "insert_roller") translate([0, 0, -floor_t - clear]) children();  // floor down
     else if (part == "roller" || part == "roller_straight")
         translate([0, 0, roll_len/2]) rotate([0, 90, 0]) translate([0, -grip_y, -roll_z]) children();   // on one end
@@ -34,6 +36,7 @@ on_bed() {
     if (part == "housing") housing();
     if (part == "insert_edge") insert_edge();
     if (part == "insert_pocket") insert_pocket();
+    if (part == "insert_flip") insert_flip();
     if (part == "insert_roller") insert_roller();
     if (part == "roller") roller_any();
     if (part == "roller_straight") roller_straight();
