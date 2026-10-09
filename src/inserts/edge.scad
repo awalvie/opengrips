@@ -102,50 +102,34 @@ module edge_slot(w) intersection() {
 
 // slot cross-section, floor at z = 0: flat sides, rounded floor corners, square top corners
 // open_r > 0 (pockets): every corner rounded by open_r instead
-module slot_prof(w, h, open_r = 0) translate([0, h/2]) {
-    if (open_r > 0) rrect(w, h, min(open_r, w/2 - 0.01, h/2 - 0.01));
-    else {
-        rrect(w, h, slot_r);
-        translate([0, h/4]) square([w, h/2], center = true);
-    }
+module slot_prof(w, h) translate([0, h/2]) {
+    rrect(w, h, slot_r);
+    translate([0, h/4]) square([w, h/2], center = true);
 }
 
-// lip roundover in the YZ plane for a corner between the vertical face and the tilted ceiling
-module lip_round_2d() {
-    th = 90 - edge_angle;                    // material angle at the lip
-    t = grip_r / tan(th/2);
-    u = [cos(edge_angle), sin(edge_angle)];  // along the ceiling
-    bis = ([0, 1] + u) / norm([0, 1] + u);
-    p1 = [0, slot_ceil + t]; p2 = [0, slot_ceil] + t*u;
-    c = [0, slot_ceil] + bis * grip_r / sin(th/2);
-    difference() {
-        polygon([[-1, slot_ceil - 1], [-1, p1[1]], p1, c, p2, p2 - [0, 1]]);
-        translate(c) circle(r = grip_r, $fn = 64);
-    }
-}
-
-// one straight slot of width w, lip at y = 0, ceiling tilted by edge_angle
-module slot_straight(w, open_r = 0) {
+// pocket slot, one solid: rounded openings from the face to the back. Toward the face the opening
+// grows by a quarter circle of mouth_r, the mouth round. One loft, because a union of hulls leaves
+// slivers in the browser's renderer.
+module pocket_loft(w, open_r) {
     floor_z = pk_floor; h = slot_ceil - floor_z;
-    hull() {
-        xz(-1, 0.01) translate([0, floor_z]) slot_prof(w, h, open_r);
-        xz(slot_d - 0.01, 0.01) translate([0, floor_z]) slot_prof(w, h + slot_d * tan(edge_angle), open_r);
-    }
-    if (grip_r <= 0) { }
-    else if (open_r <= 0) translate([-w/2, 0, 0]) rotate([90, 0, 90]) linear_extrude(w) lip_round_2d();
-    else if (mouth_r > 0) {
-        // pockets: round the whole mouth, in thin layers that grow the opening by a quarter circle
-        n = 8; r = mouth_r;
-        for (i = [0 : n - 1]) {
-            y0 = r * i / n; y1 = r * (i + 1) / n;
-            e0 = r - sqrt(r*r - (r - y0)*(r - y0));
-            e1 = r - sqrt(r*r - (r - y1)*(r - y1));
-            hull() {
-                xz(y0 - (i == 0 ? 1 : 0), 0.01 + (i == 0 ? 1 : 0)) translate([0, floor_z]) offset(r = e0) slot_prof(w, h, open_r);
-                xz(y1, 0.01) translate([0, floor_z]) offset(r = e1) slot_prof(w, h, open_r);
-            }
-        }
-    }
+    n = 8; m = 12;                           // rings in the mouth round; steps in each corner arc
+    r = max(0, mouth_r);
+    e = function(y) y < 0 ? r : y >= r ? 0 : r - sqrt(r*r - (r - y)*(r - y));   // mouth offset at y
+    ceil_at = function(y) h + (y + 1) / (slot_d + 1) * slot_d * tan(edge_angle);   // tilted ceiling: h at y = -1, h + slot_d tan at the back
+    // ring at y: the opening offset by o, ceiling at hc above the floor; counterclockwise, corner arcs of m steps
+    function ring(y, o, hc) = let(a = w/2 + o, zb = floor_z - o, zt = floor_z + hc + o,
+                                  rr = min(open_r + o, a - 0.01, (zt - zb)/2 - 0.01))
+        [for (c = [[a - rr, zt - rr, 0], [-a + rr, zt - rr, 90], [-a + rr, zb + rr, 180], [a - rr, zb + rr, 270]], j = [0 : m])
+            let(q = c[2] + 90 * j / m) [c[0] + rr * cos(q), y, c[1] + rr * sin(q)]];
+    // the mouth rings keep the higher of the round and the tilted ceiling; behind the round, the
+    // tilted ceiling alone (a small step where a sloper ceiling drops below the round)
+    mouth = [for (y = concat([-1], r > 0 ? [for (i = [0 : n]) r * i / n] : [])) ring(y, e(y), max(h, ceil_at(y) - e(y)))];
+    rings = concat(mouth, slot_d > r + 0.02 ? [ring(r + 0.01, 0, ceil_at(r + 0.01)), ring(slot_d, 0, ceil_at(slot_d))] : []);
+    k = 4 * (m + 1); last = len(rings) - 1;
+    polyhedron([for (g = rings) each g], concat(
+        [[for (j = [k - 1 : -1 : 0]) j]], [[for (j = [0 : k - 1]) last*k + j]],
+        [for (i = [0 : last - 1]) for (j = [0 : k - 1]) let(p = i*k + j, q = i*k + (j + 1) % k)
+            each [[p, q, q + k], [p, q + k, p + k]]]));
 }
 
 // plan shape of a pocket: square front, round back (a half circle for a mono, a half ellipse when wider)
@@ -157,13 +141,10 @@ module pocket_plan(w) {
     }
 }
 
-// slot of width w; open_r > 0 makes a pocket: rounded opening, round back
-module slot_shape(w, open_r = 0) {
-    if (open_r > 0) intersection() {
-        slot_straight(w, open_r);
-        translate([0, 0, floor_t + clear + skin]) linear_extrude(ins_top) pocket_plan(w);   // the mouth round stops one skin above the bottom
-    }
-    else slot_straight(w);
+// pocket of width w: rounded opening, round back
+module slot_shape(w, open_r) intersection() {
+    pocket_loft(w, open_r);
+    translate([0, 0, floor_t + clear + skin]) linear_extrude(ins_top) pocket_plan(w);   // the mouth round stops one skin above the bottom
 }
 
 // edges: the swept slot. Pockets (open_r > 0): the straight slot cut to the pocket plan.

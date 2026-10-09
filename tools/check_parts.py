@@ -128,11 +128,12 @@ def check_slot(mesh, part, params):
         if len(d) >= 2 and d[-2] - d[-1] < MIN_WALL:
             return problems + [f"front wall {d[-2] - d[-1]:.1f} mm under the size mark at x={xf:.0f}"]
     # ends: the wall from the slot end out to the latch relief, half way up the opening
-    ds = down(mesh, x, depth / 2)
+    mid = depth / 2 + 0.013   # off round numbers: a ray along a mesh edge misses both faces there
+    ds = down(mesh, x, mid)
     ceiling = min((z for z in ds if z > ds[-2] + 0.01), default=None)
     if len(ds) < 3 or ceiling is None:
         return problems + ["no slot half way back"]
-    side = hits(mesh, np.array([x, depth / 2, (ds[-2] + ceiling) / 2]), np.array([-1, 0, 0]))
+    side = hits(mesh, np.array([x, mid, (ds[-2] + ceiling) / 2]), np.array([-1, 0, 0]))
     if len(side) < 2 or side[1] - side[0] < MIN_WALL:
         problems.append("no slot end wall" if len(side) < 2 else f"slot end wall {side[1] - side[0]:.1f} mm")
     return problems
