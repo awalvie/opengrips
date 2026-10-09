@@ -269,14 +269,31 @@ const ICON = {
 };
 const icon = (k) => ICON[k] ? `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>` : "";
 
+// a setting's help line hides behind an "i" button after its label (W3C APG disclosure). The line
+// opens under the label. Open lines stay open when the editor redraws, by the setting's key.
+const openTips = new Set();
+const tipHtml = (label, help) => help ? `<button type="button" class="info" aria-expanded="false" aria-label="About ${label}">` +
+  `<span aria-hidden="true">i</span></button>` : "";
+const helpHtml = (help) => help ? `<p class="help" hidden>${help}</p>` : "";
+let tipN = 0;
+function wireTip(wrap, key) {
+  const b = wrap.querySelector(".info"), line = wrap.querySelector(".help");
+  if (!b) return;
+  line.id = `help-${++tipN}`; b.setAttribute("aria-controls", line.id);
+  const show = (open) => { b.setAttribute("aria-expanded", open); line.hidden = !open; };
+  show(openTips.has(key));
+  b.onclick = () => { const open = line.hidden; open ? openTips.add(key) : openTips.delete(key); show(open); };
+}
+
 // a choice: one bar of options, [{label, blurb, icon, active, pick}]. A radio group for the keyboard
 // (W3C APG radio group): Tab stops on the checked option only, the arrow keys move and pick.
 // Only the picked option's line (blurb) shows, under the bar; none picked is "Custom".
 let noteN = 0;
 function optionButtons(label, options, help, key = label) {
   const wrap = document.createElement("div"); wrap.className = "param"; wrap.dataset.key = key;
-  wrap.innerHTML = `<label>${label}</label><div class="opts" role="radiogroup" aria-label="${label}"></div>` +
-    (options.some((o) => o.blurb) ? `<p class="note"></p>` : "") + (help ? `<p>${help}</p>` : "");
+  wrap.innerHTML = `<div class="lrow"><label>${label}</label>${tipHtml(label, help)}</div>${helpHtml(help)}` +
+    `<div class="opts" role="radiogroup" aria-label="${label}"></div>` + (options.some((o) => o.blurb) ? `<p class="note"></p>` : "");
+  wireTip(wrap, key);
   options.forEach((o) => {
     const b = document.createElement("button");
     b.setAttribute("role", "radio"); b.setAttribute("aria-checked", !!o.active);
@@ -328,7 +345,7 @@ function control(p, group) {
       return { label: m[1], blurb: m[2], icon: o.icon, active: vals[p.name] === o.value,
                pick: () => { vals[p.name] = o.value; buildEditor(); edited(); } };   // a grip kind changes the rows under it
     }), p.help);
-    w.querySelector("label").append(resetButton(p, () => { vals[p.name] = p.default; buildEditor(); edited(); }));
+    w.querySelector(".lrow").append(resetButton(p, () => { vals[p.name] = p.default; buildEditor(); edited(); }));
     w.dataset.name = p.name; w.hidden = !shown(p, group);
     return w;
   }
@@ -336,10 +353,10 @@ function control(p, group) {
   wrap.className = "param"; wrap.hidden = !shown(p, group); wrap.dataset.name = p.name;
   const id = "p-" + p.name;
   if (p.type === "number") {
-    wrap.innerHTML = `<label for="${id}">${p.label}<span class="val"><output></output></span></label>
-      <div class="slider"><button class="step" aria-label="Less ${p.label}">−</button>
+    wrap.innerHTML = `<div class="lrow"><label for="${id}">${p.label}</label>${tipHtml(p.label, p.help)}<span class="val"><output></output></span></div>
+      ${helpHtml(p.help)}<div class="slider"><button class="step" aria-label="Less ${p.label}">−</button>
       <input id="${id}" type="range" min="${p.min}" max="${p.max}" step="${p.step}">
-      <button class="step" aria-label="More ${p.label}">+</button></div>` + (p.help ? `<p>${p.help}</p>` : "");
+      <button class="step" aria-label="More ${p.label}">+</button></div>`;
     const input = wrap.querySelector("input"), out = wrap.querySelector("output");
     const [less, more] = wrap.querySelectorAll(".step");
     input.value = vals[p.name];
@@ -355,16 +372,16 @@ function control(p, group) {
     less.onclick = () => set(Number(input.value) - p.step);
     more.onclick = () => set(Number(input.value) + p.step);
   } else {
-    wrap.innerHTML = `<label for="${id}">${p.label}</label><select id="${id}">` +
-      p.options.map((o) => `<option value="${o.value}">${o.label}</option>`).join("") + "</select>" +
-      (p.help ? `<p>${p.help}</p>` : "");
+    wrap.innerHTML = `<div class="lrow"><label for="${id}">${p.label}</label>${tipHtml(p.label, p.help)}</div>${helpHtml(p.help)}<select id="${id}">` +
+      p.options.map((o) => `<option value="${o.value}">${o.label}</option>`).join("") + "</select>";
     const sel = wrap.querySelector("select");
     sel.value = vals[p.name];
     const pick = (v) => { vals[p.name] = sel.value = v; reset.hidden = v === p.default; refreshVisibility(); edited(); };
     const reset = resetButton(p, () => pick(p.default));
-    wrap.querySelector("label").append(reset);
+    wrap.querySelector(".lrow").append(reset);
     sel.addEventListener("change", () => pick(sel.value));
   }
+  wireTip(wrap, p.name);
   return wrap;
 }
 
@@ -481,7 +498,8 @@ function oneTap(sc, prefix, key) {
   const vals = () => cur().values;
   const on = (o) => Object.entries(o.values).every(([k, v]) => ["slot_d", "grip_r", "r"].includes(k) || vals()[prefix + k] === v);
   const w = optionButtons(sc.label, sc.options.map((o) => ({ label: o.label, blurb: o.blurb, icon: o.icon, active: on(o),
-    pick: () => { Object.entries(o.values).forEach(([k, v]) => { vals()[prefix + k] = v; }); buildEditor(); edited(); } })), sc.help, key);
+    pick: () => { Object.entries(o.values).forEach(([k, v]) => { vals()[prefix + k] = v; }); buildEditor(); edited(); } })), "", key);
+  if (sc.help) w.insertAdjacentHTML("beforeend", `<p class="rule">${sc.help}</p>`);
   const bs = w.querySelectorAll(".opts button");
   syncs.push(() => { sc.options.forEach((o, n) => bs[n].setAttribute("aria-checked", on(o))); w.roving(); });
   return w;
