@@ -89,10 +89,13 @@ def render(part, params, tmp, engine):
     stl = pathlib.Path(tmp) / f"{engine}-{abs(hash((part, tuple(sorted(params.items())))))}.stl"
     defs = [f'part="{part}"'] + [f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}" for k, v in params.items()]
     if engine == "native":
-        args = ["openscad", "-q", "--export-format", "binstl", *(x for d in defs for x in ("-D", d)), "-o", str(stl), str(ROOT / "opengrips.scad")]
+        args = ["openscad", "--export-format", "binstl", *(x for d in defs for x in ("-D", d)), "-o", str(stl), str(ROOT / "opengrips.scad")]
     else:
         args = ["node", str(ROOT / "tools/render_wasm.mjs"), str(stl), *defs]
-    subprocess.run(args, check=True, capture_output=True)
+    r = subprocess.run(args, capture_output=True, text=True)
+    if r.returncode:   # the error, so one broken render is reported with the rest
+        lines = r.stderr.strip().splitlines()
+        return next((l for l in reversed(lines) if "ERROR" in l), lines[-1] if lines else f"exit code {r.returncode}")
     return trimesh.load(stl)
 
 
@@ -230,7 +233,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp, ThreadPoolExecutor(a.jobs) as pool:
         meshes = pool.map(lambda c: render(c[1], c[2], tmp, c[0]), todo)
         for (engine, part, params), mesh in zip(todo, meshes):
-            problems = check(part, params, mesh)
+            problems = [f"render failed: {mesh}"] if isinstance(mesh, str) else check(part, params, mesh)
             failed += bool(problems)
             label = " ".join([engine, part] + [f"{k}={v}" for k, v in params.items()])
             print(f"{'FAIL' if problems else 'ok  '} {label}" + (f": {'; '.join(problems)}" if problems else ""))
