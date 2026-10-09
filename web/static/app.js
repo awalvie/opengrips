@@ -928,7 +928,7 @@ $("theme").onclick = () => {
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeButton);
 themeButton();
 
-fetch("catalog.json").then((r) => r.json()).then((c) => {
+fetch("catalog.json").then((r) => r.ok ? r.json() : Promise.reject(new Error(`the server said ${r.status}`))).then((c) => {
   cat = c;
   if (!loadKit()) kit.items.push(newInsert("edge"), newHousing());
   setMode(mode); renderNames(); update();
