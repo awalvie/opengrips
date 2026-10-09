@@ -271,16 +271,8 @@
        "label": "Edge"
       },
       {
-       "value": "mono",
-       "label": "Mono pocket"
-      },
-      {
-       "value": "two",
-       "label": "Two-finger pocket"
-      },
-      {
-       "value": "three",
-       "label": "Three-finger pocket"
+       "value": "pocket",
+       "label": "Pockets"
       }
      ],
      "default": "edge",
@@ -324,6 +316,66 @@
      "simple": false
     },
     {
+     "name": "top_w",
+     "label": "Top edge width",
+     "type": "number",
+     "min": 40,
+     "max": 93,
+     "step": 1,
+     "default": 92,
+     "unit": "mm",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "top_pn",
+     "label": "Top pockets",
+     "type": "number",
+     "min": 1,
+     "max": 3,
+     "step": 1,
+     "default": 1,
+     "unit": "",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "top_pw",
+     "label": "Top pocket width",
+     "type": "number",
+     "min": 18,
+     "max": 86,
+     "step": 1,
+     "default": 58,
+     "unit": "mm",
+     "help": "Mono about 22, two fingers about 40, three fingers about 58.",
+     "simple": false
+    },
+    {
+     "name": "top_pgap",
+     "label": "Top wall between",
+     "type": "number",
+     "min": 6,
+     "max": 20,
+     "step": 1,
+     "default": 10,
+     "unit": "mm",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "top_pr",
+     "label": "Top opening corner radius",
+     "type": "number",
+     "min": 2,
+     "max": 11,
+     "step": 0.5,
+     "default": 8,
+     "unit": "mm",
+     "help": "Rounding of the pocket opening, seen from the front.",
+     "simple": false
+    },
+    {
      "name": "bot_kind",
      "label": "Bottom grip",
      "type": "choice",
@@ -333,16 +385,8 @@
        "label": "Edge"
       },
       {
-       "value": "mono",
-       "label": "Mono pocket"
-      },
-      {
-       "value": "two",
-       "label": "Two-finger pocket"
-      },
-      {
-       "value": "three",
-       "label": "Three-finger pocket"
+       "value": "pocket",
+       "label": "Pockets"
       }
      ],
      "default": "edge",
@@ -384,6 +428,66 @@
      "unit": "mm",
      "help": "The lip curves this far back in the middle for the longer middle fingers.",
      "simple": false
+    },
+    {
+     "name": "bot_w",
+     "label": "Bottom edge width",
+     "type": "number",
+     "min": 40,
+     "max": 93,
+     "step": 1,
+     "default": 92,
+     "unit": "mm",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "bot_pn",
+     "label": "Bottom pockets",
+     "type": "number",
+     "min": 1,
+     "max": 3,
+     "step": 1,
+     "default": 1,
+     "unit": "",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "bot_pw",
+     "label": "Bottom pocket width",
+     "type": "number",
+     "min": 18,
+     "max": 86,
+     "step": 1,
+     "default": 58,
+     "unit": "mm",
+     "help": "Mono about 22, two fingers about 40, three fingers about 58.",
+     "simple": false
+    },
+    {
+     "name": "bot_pgap",
+     "label": "Bottom wall between",
+     "type": "number",
+     "min": 6,
+     "max": 20,
+     "step": 1,
+     "default": 10,
+     "unit": "mm",
+     "help": "",
+     "simple": false
+    },
+    {
+     "name": "bot_pr",
+     "label": "Bottom opening corner radius",
+     "type": "number",
+     "min": 2,
+     "max": 11,
+     "step": 0.5,
+     "default": 8,
+     "unit": "mm",
+     "help": "Rounding of the pocket opening, seen from the front.",
+     "simple": false
     }
    ],
    "show_if": {
@@ -391,11 +495,69 @@
      "top_kind",
      "edge"
     ],
+    "top_w": [
+     "top_kind",
+     "edge"
+    ],
+    "top_pn": [
+     "top_kind",
+     "pocket"
+    ],
+    "top_pw": [
+     "top_kind",
+     "pocket"
+    ],
+    "top_pgap": [
+     "top_kind",
+     "pocket"
+    ],
+    "top_pr": [
+     "top_kind",
+     "pocket"
+    ],
     "bot_ergo": [
      "bot_kind",
      "edge"
+    ],
+    "bot_w": [
+     "bot_kind",
+     "edge"
+    ],
+    "bot_pn": [
+     "bot_kind",
+     "pocket"
+    ],
+    "bot_pw": [
+     "bot_kind",
+     "pocket"
+    ],
+    "bot_pgap": [
+     "bot_kind",
+     "pocket"
+    ],
+    "bot_pr": [
+     "bot_kind",
+     "pocket"
     ]
-   }
+   },
+   "spans": [
+    {
+     "names": [
+      "top_pn",
+      "top_pw",
+      "top_pgap"
+     ],
+     "max": 86
+    },
+    {
+     "names": [
+      "bot_pn",
+      "bot_pw",
+      "bot_pgap"
+     ],
+     "max": 86
+    }
+   ]
   },
   {
    "id": "pocket",

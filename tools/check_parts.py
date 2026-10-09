@@ -32,7 +32,6 @@ import catalog  # noqa: E402
 MIN_WALL = 1.5   # thinnest wall a check accepts: under the slot and at the slot ends
 MIN_RAIL = 3     # thinnest rail over the slot at the face: half of rail_t, as an edge's lip round climbs into it
 MIN_ROOM = 16    # least finger room in a flip insert slot: the lowest slot_h an edge insert takes
-FLIP_POCKETS = {"mono": 22, "two": 40, "three": 58}   # pocket_kind_w in src/inserts/flip.scad
 
 
 def cases():
@@ -63,15 +62,23 @@ def cases():
         top = dict(zip(("top_d", "top_r", "top_ergo"), values))
         bot = {k.replace("top", "bot"): flip[k]["min"] + flip[k]["max"] - v for k, v in top.items()}
         out.append(("insert_flip", top | bot))
-    # flip pockets: each kind on top at every corner of depth and lip radius, the next kind under it
-    # at the opposite corner. A pocket ignores the ergo curve.
-    kinds = list(FLIP_POCKETS)
-    for i, kind in enumerate(kinds):
+    # flip pockets: mono, two and three fingers on top at every corner of depth and lip radius, the
+    # next one under it at the opposite corner. A pocket ignores the ergo curve.
+    widths = [22, 40, 58]
+    for i, w in enumerate(widths):
         for values in itertools.product(*((flip[f"top_{n}"]["min"], flip[f"top_{n}"]["max"]) for n in ("d", "r"))):
             top = dict(zip(("top_d", "top_r"), values))
             bot = {k.replace("top", "bot"): flip[k]["min"] + flip[k]["max"] - v for k, v in top.items()}
-            out.append(("insert_flip", top | bot | {"top_kind": kind, "bot_kind": kinds[(i + 1) % len(kinds)]}))
-    out.append(("insert_flip", {"top_kind": "mono", "top_r": flip["top_r"]["max"], "top_ergo": flip["top_ergo"]["max"]}))
+            out.append(("insert_flip", top | bot | {"top_kind": "pocket", "top_pw": w,
+                                                    "bot_kind": "pocket", "bot_pw": widths[(i + 1) % len(widths)]}))
+    out.append(("insert_flip", {"top_kind": "pocket", "top_pw": 22, "top_r": flip["top_r"]["max"], "top_ergo": flip["top_ergo"]["max"]}))
+    # the widest pocket rows, with the biggest mouth round, and the narrowest edge
+    span = catalog.FLIP["spans"][0]["max"]
+    for n in (2, 3):
+        w = (span - (n - 1) * flip["top_pgap"]["default"]) // n
+        out.append(("insert_flip", {"top_kind": "pocket", "top_pn": n, "top_pw": w, "top_r": flip["top_r"]["max"],
+                                    "bot_kind": "pocket", "bot_pn": n, "bot_pw": w, "bot_r": flip["bot_r"]["max"]}))
+    out.append(("insert_flip", {"top_w": flip["top_w"]["min"], "bot_kind": "pocket", "bot_pn": 1, "bot_pw": span}))
     out.append(("insert_flip", {"floor_t": spec["floor_t"]["max"]}))   # the insert sits higher in a thicker housing floor
     pocket = next(i for i in catalog.INSERTS if i["id"] == "pocket")
     out.append(("insert_pocket", {"pocket_w": pocket["spans"][0]["max"]}))
@@ -168,13 +175,16 @@ def check_flip(mesh, params):
         if key == "bot":
             m.apply_transform(turn)
         half = trimesh.boolean.intersection([m, box], engine="manifold")
-        kind = v[f"{key}_kind"]
+        kind, g = v[f"{key}_kind"], lambda n: v[f"{key}_{n}"]
+        x = 0
         if kind == "edge":
-            found = check_slot(half, "insert_edge", {"slot_d": v[f"{key}_d"]})
+            found = check_slot(half, "insert_edge", {"slot_d": g("d"), "slot_w": g("w")})
         else:
-            found = check_slot(half, "insert_pocket", {"slot_d": v[f"{key}_d"], "pocket_w": FLIP_POCKETS[kind]})
-        # room under the grip, half way back in the middle, where the ergo lip sits furthest back
-        ds = down(half, 0, (v[f"{key}_ergo"] if kind == "edge" else 0) + v[f"{key}_d"] / 2)
+            found = check_slot(half, "insert_pocket", {"slot_d": g("d"), "pocket_n": g("pn"), "pocket_w": g("pw"),
+                                                      "pocket_gap": g("pgap"), "pocket_r": g("pr")})
+            x = (g("pw") - (g("pn") * g("pw") + (g("pn") - 1) * g("pgap"))) / 2   # the first pocket from the left
+        # room under the grip, half way back, where the ergo lip sits furthest back
+        ds = down(half, x, (g("ergo") if kind == "edge" else 0) + g("d") / 2)
         if len(ds) != 4:
             found.append("no slot half way back")
         elif ds[1] - ds[2] < MIN_ROOM:

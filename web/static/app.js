@@ -119,13 +119,13 @@ function nameOf(it) {
   }
   const ang = v.edge_angle > 0 ? ` incut ${v.edge_angle}°` : v.edge_angle < 0 ? ` sloper ${-v.edge_angle}°` : "";
   if (it.insertId === "edge") return `${v.slot_d} mm${v.ergo ? " ergo" : ""} edge${ang}`;
+  const pockets = (n, w) => `${n > 1 ? n + " × " : ""}${{ 22: "mono", 40: "two-finger", 58: "three-finger" }[w] || `${w} mm`} pocket`;
   if (it.insertId === "flip") {
-    const grip = (k) => `${v[k + "_d"]} mm ${v[k + "_kind"] === "edge" ? (v[k + "_ergo"] ? "ergo edge" : "edge") : v[k + "_kind"] + (v[k + "_kind"] === "mono" ? "" : "-finger") + " pocket"}`;
+    const grip = (k) => `${v[k + "_d"]} mm ${v[k + "_kind"] === "edge" ? (v[k + "_ergo"] ? "ergo edge" : "edge") : pockets(v[k + "_pn"], v[k + "_pw"])}`;
     return `Flip, ${grip("top")} / ${grip("bot")}`;
   }
   if (it.insertId === "pocket") {
-    const kind = { 22: "mono", 40: "two-finger", 58: "three-finger" }[v.pocket_w] || `${v.pocket_w} mm`;
-    const name = `${v.pocket_n > 1 ? v.pocket_n + " × " : ""}${kind} pocket, ${v.slot_d} mm${ang}`;
+    const name = `${pockets(v.pocket_n, v.pocket_w)}, ${v.slot_d} mm${ang}`;
     return name[0].toUpperCase() + name.slice(1);
   }
   return `${v.roll_type === "straight" ? "Straight" : "Unlevel"} roller, ${v.roll_d} mm`;
@@ -739,6 +739,11 @@ function loadKit() {
     // each item takes only its own settings, each inside its range
     const items = k.items.map((x) => {
       const it = x.h ? newHousing() : newInsert(x.i), own = defOf(it).params.map((p) => p.name);
+      // older flip links name one pocket by its fingers
+      if (x.i === "flip") ["top", "bot"].forEach((s) => {
+        const w = { mono: 22, two: 40, three: 58 }[x.v?.[s + "_kind"]];
+        if (w) { x.v[s + "_kind"] = "pocket"; x.v[s + "_pw"] = w; }
+      });
       // a setting the page no longer has (from an older link) is dropped, the rest of the kit stays
       Object.entries(x.h || x.v || {}).forEach(([n, v]) => { if (own.includes(n)) it.values[n] = v; });
       cleanParams(it.values, defOf(it));

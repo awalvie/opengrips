@@ -62,20 +62,32 @@ HOUSING = {
 }
 
 # Flip insert: two grips, one on top and one turned over under it. Each is a flat or ergo edge,
-# or one pocket. Each slot has 16.5 mm of room down to the web; the lip radius stops at 3.5 so an
-# ergo lip keeps 16 mm. No roller: it does not fit in half the insert.
+# or a row of pockets. Each slot has 16.5 mm of room down to the web, so no angle and no slot
+# height; the lip radius stops at 3.5 so an ergo lip keeps 16 mm. No roller: it does not fit in
+# half the insert.
+FLIP_SPAN = 86   # widest pocket row: its mouth round stays clear of the latch relief on the bottom half
+
+
 def flip_grip(key, which, depth, radius):
     return [
         choice(f"{key}_kind", f"{which} grip", [
             {"value": "edge", "label": "Edge"},
-            {"value": "mono", "label": "Mono pocket"},
-            {"value": "two", "label": "Two-finger pocket"},
-            {"value": "three", "label": "Three-finger pocket"},
+            {"value": "pocket", "label": "Pockets"},
         ], "edge", simple=True),
         num(f"{key}_d", f"{which} depth", 6, 30, 1, depth, help="From the lip to the back of the slot or pocket.", simple=True),
         num(f"{key}_r", f"{which} lip radius", 0.5, 3.5, 0.5, radius, help="Roundover on the lip. Small is sharp, big is friendly."),
         num(f"{key}_ergo", f"{which} ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers."),
+        num(f"{key}_w", f"{which} edge width", 40, MAX_W, 1, 92),
+        num(f"{key}_pn", f"{which} pockets", 1, 3, 1, 1, unit=""),
+        num(f"{key}_pw", f"{which} pocket width", 18, FLIP_SPAN, 1, 58, help="Mono about 22, two fingers about 40, three fingers about 58."),
+        num(f"{key}_pgap", f"{which} wall between", 6, 20, 1, 10),
+        num(f"{key}_pr", f"{which} opening corner radius", 2, 11, 0.5, 8, help="Rounding of the pocket opening, seen from the front."),
     ]
+
+
+def flip_show_if(key):
+    return {f"{key}_{n}": [f"{key}_kind", "edge"] for n in ("ergo", "w")} | \
+           {f"{key}_{n}": [f"{key}_kind", "pocket"] for n in ("pn", "pw", "pgap", "pr")}
 
 
 FLIP = {
@@ -84,7 +96,8 @@ FLIP = {
     "blurb": "two grips, turn it over",
     "parts": [{"part": "insert_flip", "name": "Flip insert", "supports": "no supports", "settings": SOLID}],
     "params": flip_grip("top", "Top", 20, 3) + flip_grip("bot", "Bottom", 10, 2),
-    "show_if": {"top_ergo": ["top_kind", "edge"], "bot_ergo": ["bot_kind", "edge"]},
+    "show_if": flip_show_if("top") | flip_show_if("bot"),
+    "spans": [{"names": [f"{k}_pn", f"{k}_pw", f"{k}_pgap"], "max": FLIP_SPAN} for k in ("top", "bot")],
 }
 
 INSERTS = [
