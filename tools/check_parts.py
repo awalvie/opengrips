@@ -40,6 +40,15 @@ def cases():
     anchor = next(p for p in catalog.HOUSING["params"] if p["name"] == "anchor")
     for o in anchor["options"]:
         out.append(("housing", {"anchor": o["value"]}))
+    # each housing setting at both ends, with the anchor it belongs to, and solid walls
+    for p in catalog.HOUSING["params"]:
+        if p["type"] == "number":
+            a_for = catalog.HOUSING["show_if"].get(p["name"], ["anchor", anchor["default"]])[1]
+            out += [("housing", {"anchor": a_for, p["name"]: v}) for v in (p["min"], p["max"])]
+    out.append(("housing", {"style": "solid"}))
+    # the roller and its frame at the smallest and largest diameter
+    roll_d = next(p for i in catalog.INSERTS if i["id"] == "roller" for p in i["params"] if p["name"] == "roll_d")
+    out += [(part, {"roll_d": v}) for part in ("insert_roller", "roller") for v in (roll_d["min"], roll_d["max"])]
     for ins in catalog.INSERTS:
         for part in ins["parts"]:
             out.append((part["part"], {}))
