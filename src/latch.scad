@@ -37,8 +37,10 @@ module latch_arm(down = false, band = false) {
     z1 = down || band ? lt_z1 : lt_top;
     b0 = lt_z0 + 1; b1 = lt_z1 - 1;             // button height
     for (m = [0, 1]) mirror([m, 0, 0]) {
-        intersection() {   // the insert has rounded corners; keep the arm inside them
-            translate([xo - lt_t, 0, z0]) cube([lt_t, lt_len + 1, z1 - z0]);
+        // the insert has rounded corners; keep the arm inside them. The arm stops 0.01 short of the
+        // side face: a face shared with the insert body leaves slivers in the browser's renderer.
+        intersection() {
+            translate([xo - lt_t, 0, z0]) cube([lt_t - 0.01, lt_len + 1, z1 - z0]);
             insert_blank();
         }
         hull() {
