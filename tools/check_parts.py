@@ -56,7 +56,7 @@ def cases():
         out.append(("insert_edge", params))
         out.append(("insert_pocket", params))
     out.append(("insert_edge", {"slot_w": spec["slot_w"]["max"]}))
-    out += [("fit_ring", {}), ("fit_frame", {}), ("fit_channel", {}), ("fit_cheek", {})]
+    out += [(p["part"], {}) for p in catalog.FIT_TEST]
     # flip: every corner of the top edge, with the bottom edge at the opposite corner
     flip = {p["name"]: p for p in catalog.FLIP["params"]}
     for values in itertools.product(*((flip[f"top_{n}"]["min"], flip[f"top_{n}"]["max"]) for n in ("d", "r", "ergo"))):

@@ -566,5 +566,23 @@
    "part": "carabiner",
    "name": "Carabiner"
   }
+ ],
+ "fit_test": [
+  {
+   "part": "fit_ring",
+   "name": "Ring"
+  },
+  {
+   "part": "fit_frame",
+   "name": "Frame"
+  },
+  {
+   "part": "fit_channel",
+   "name": "Latch channel"
+  },
+  {
+   "part": "fit_cheek",
+   "name": "Latch cheek"
+  }
  ]
 }

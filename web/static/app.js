@@ -522,6 +522,9 @@ function buildDownloads() {
   dl.innerHTML = kit.items.length ? `<p class="warn">Not load-tested yet. Check every part before each session, and keep your feet clear of the weight.</p>
     <p class="hint">Ticked files go in the zip, the arrow saves one file. PETG, ready to slice.
     <a href="https://github.com/awalvie/opengrips/blob/main/PRINTING.md" target="_blank" rel="noopener">Printing guide</a></p>` : "";
+  // the fit test comes before any kit, so it shows on an empty kit too
+  dl.insertAdjacentHTML("beforeend", `<p class="hint">New printer? Print the <a href="#" id="fit-dl">fit test</a> first, about 41 g.</p>`);
+  $("fit-dl").onclick = (e) => { e.preventDefault(); downloadFitTest(); };
   kit.items.forEach((it) => {
     const box = document.createElement("div"); box.className = "ditem";
     it.skip = it.skip || {};   // parts left out of the zip, by part name; a plain object so that Copy keeps it
@@ -601,6 +604,23 @@ async function downloadKit() {
     toast("The zip failed: " + e.message);
   } finally {
     zipping = false; kitButton();
+  }
+}
+
+// the fit test parts, as they print, in one zip
+let fitting = false;
+async function downloadFitTest() {
+  if (fitting) return;
+  fitting = true;
+  const no = toast("Preparing the fit test zip…", true);
+  try {
+    const files = cat.fit_test.map((p) => stl(p.part, {}, true).then((data) => ({ name: `fit-test-${slug(p.name)}.stl`, data: new Uint8Array(data) })));
+    saveBlob(await makeZip(await Promise.all(files)), "opengrips-fit-test.zip");
+    hideToast(no);
+  } catch (e) {
+    toast("The zip failed: " + e.message);
+  } finally {
+    fitting = false;
   }
 }
 

@@ -168,9 +168,13 @@ PRESETS = [
 # Reference models for the preview only.
 REFS = [{"part": "carabiner", "name": "Carabiner"}]
 
+# Print before the kit: the pocket gap and the latch, on your printer. Downloaded as one zip.
+FIT_TEST = [{"part": "fit_ring", "name": "Ring"}, {"part": "fit_frame", "name": "Frame"},
+            {"part": "fit_channel", "name": "Latch channel"}, {"part": "fit_cheek", "name": "Latch cheek"}]
+
 
 def catalog():
-    return {"housing": HOUSING, "inserts": INSERTS, "refs": REFS}
+    return {"housing": HOUSING, "inserts": INSERTS, "refs": REFS, "fit_test": FIT_TEST}
 
 
 def all_params():
