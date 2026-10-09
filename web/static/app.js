@@ -246,7 +246,7 @@ function shown(p, group) {
 
 // a row of big buttons; options are [{label, blurb, active, pick}]
 function optionButtons(label, options, help) {
-  const wrap = document.createElement("div"); wrap.className = "param";
+  const wrap = document.createElement("div"); wrap.className = "param"; wrap.dataset.key = label;
   wrap.innerHTML = `<label>${label}</label><div class="opts" role="radiogroup" aria-label="${label}"></div>` +
     (help ? `<p>${help}</p>` : "");
   if (options.length === 3) wrap.querySelector(".opts").classList.add("three");
@@ -349,7 +349,29 @@ function refreshVisibility() {
 // the editor shows the selected item only. Simple: the main choices. Advanced: every setting.
 const inMode = (params) => params.filter((p) => mode === "advanced" || p.simple);
 let syncChoice = null;   // re-marks the Shape, Fingers or Roller button after a slider moves
+
+// a rebuild replaces every control, so keyboard focus would fall back to the page. Note where it
+// was (its row, and its place in the row), and put it back on the new control there.
+function focusSpot() {
+  const a = document.activeElement;
+  if (!a || !$("editor").contains(a)) return null;
+  const row = a.closest(".param");
+  return { id: a.id, row: row && (row.dataset.name || row.dataset.key),
+           n: row ? [...row.querySelectorAll("button, input, select")].indexOf(a) : -1 };
+}
+function restoreFocus(f) {
+  if (!f) return;
+  const box = $("editor"), seen = (el) => el && !el.hidden && el.getClientRects().length;
+  const row = f.row && [...box.querySelectorAll(".param")].find((r) => (r.dataset.name || r.dataset.key) === f.row);
+  // a Reset button hides once used: then the row's checked option, or its first control
+  const el = [f.id && $(f.id), row && row.querySelectorAll("button, input, select")[f.n],
+              row && row.querySelector('[aria-checked="true"]'), row && row.querySelector("button, input, select"),
+              box.querySelector(".more")].find(seen);
+  if (el) el.focus();
+}
+
 function buildEditor() {
+  const spot = focusSpot();
   const box = $("editor"); box.innerHTML = "";
   const it = cur();
   syncChoice = null;
@@ -372,6 +394,7 @@ function buildEditor() {
     buildEditor(); edited(); done();
   };
   box.append(more, all);
+  restoreFocus(spot);
 }
 
 function buildInsertEditor(box, it) {
