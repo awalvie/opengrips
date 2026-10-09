@@ -22,7 +22,7 @@ module insert_roller() {
         intersection() {   // clipped to the rounded insert outline
             union() {
                 translate([-iw/2, 0, z0]) cube([iw, id, ins_floor]);
-                for (s = [-1, 1]) translate([s > 0 ? iw/2 - cheek_t : -iw/2, 0, z0]) cube([cheek_t, id, ih]);
+                for (s = [-1, 1]) translate([s > 0 ? iw/2 - cheek_t : -iw/2, 0, z0]) cube([cheek_t, id, ih + 1]);   // past the top: the clip cuts it
                 for (s = [-1, 1])
                     translate([s > 0 ? iw/2 - cheek_t : -iw/2, grip_y, roll_z]) rotate([0, 90, 0]) cylinder(r = cheek_nose, h = cheek_t, $fn = 96);
             }
