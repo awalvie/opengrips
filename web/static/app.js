@@ -401,7 +401,7 @@ function buildInsertEditor(box, it) {
   const def = insertDef(it.insertId);
   const pickKind = (id) => {
     if (id === cur().insertId) return;
-    const done = undoable(`${nameOf(cur())} is now ${insertDef(id).name.toLowerCase()}.`);
+    const done = undoable(`${nameOf(cur())} is now ${insertDef(id).name.toLowerCase()}.`, true);
     kit.items[kit.sel] = newInsert(id); buildEditor(); edited(); done();
   };
   box.append(optionButtons("Kind", cat.inserts.map((i) => ({
@@ -438,9 +438,15 @@ function toast(text, sticky, undo) {
 }
 function hideToast(no) { if (no === toastNo) $("toast").hidden = true; }
 
-// a copy of the kit before a change that loses settings, for Undo
-function undoable(text) {
-  const items = JSON.parse(JSON.stringify(kit.items)), sel = kit.sel;
+// a copy of the kit before a change that loses settings, for Undo. Several insert kinds in a row on
+// one item (chain), with the Undo offer still open, keep the oldest copy: Undo goes back to before
+// the first change.
+let undoCopy = null;
+function undoable(text, chain = false) {
+  const open = !$("toast").hidden && $("toast").querySelector("button");
+  if (!(chain && open && undoCopy && undoCopy.chain && undoCopy.sel === kit.sel))
+    undoCopy = { items: JSON.parse(JSON.stringify(kit.items)), sel: kit.sel, chain };
+  const { items, sel } = undoCopy;
   return () => toast(text, false, () => { kit.items = items; kit.sel = sel; partnerKey = "auto"; buildEditor(); edited(); });
 }
 
