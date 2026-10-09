@@ -9,17 +9,16 @@ ergo = 0;                                    // ergonomic curve: the lip sits th
 edge_sb = 0;                                 // lip set back from the front (0 = flush)
 skin = 2.4;                                  // wall kept under the slot floor
 
-ins_top = floor_t + pk_h - clear;            // top of the insert
 lip_t = grip_r / tan((90 - edge_angle) / 2);  // how far the lip roundover runs up the face
 // ceiling height at the lip: an incut ceiling rises toward the back, and a big roundover runs up
 // the face, so start lower to keep the rail. A pocket rounds its whole mouth: that round runs its
 // full radius up the face at any angle, and the full rail stays above it. Where the slot needs the
 // room (steep or deep), the round gives way before the slot height.
-pk_round_room = ins_top - rail_t - abs(slot_d * tan(edge_angle)) - (floor_t + clear + skin) - slot_h;
+pk_round_room = ins_top - rail_t - abs(slot_d * tan(edge_angle)) - (ins_bot + skin) - slot_h;
 slot_ceil = ins_top - max(rail_t + min(grip_r, max(0, pk_round_room)), lip_t + 1) - max(0, slot_d * tan(edge_angle));
 mouth_r = min(grip_r, ins_top - rail_t - slot_ceil);   // pocket mouth round
 // pocket floor: slot_h of room where the ceiling is lowest, one skin above the insert bottom
-pk_floor = max(floor_t + clear + skin, min(slot_ceil, slot_ceil + slot_d * tan(edge_angle)) - slot_h);
+pk_floor = max(ins_bot + skin, min(slot_ceil, slot_ceil + slot_d * tan(edge_angle)) - slot_h);
 
 // Edge slot, seen from the side: one profile swept across the width.
 // Flat, incut or shallow sloper: round lip, straight ceiling that rises toward the back by edge_angle.
@@ -32,7 +31,7 @@ pk_floor = max(floor_t + clear + skin, min(slot_ceil, slot_ceil + slot_d * tan(e
 // The sweep reads its settings from $ variables. They default to the settings above; a part with
 // more than one edge sets them again around each one.
 $e_d = slot_d; $e_r = grip_r; $e_angle = edge_angle; $e_ergo = ergo; $e_h = slot_h;
-$e_floor_min = floor_t + clear + skin;      // lowest the slot floor goes
+$e_floor_min = ins_bot + skin;      // lowest the slot floor goes
 $p_floor = pk_floor; $p_ceil = slot_ceil; $p_mouth = mouth_r;   // pocket floor, ceiling at the lip, mouth round
 back_r = 3;                                  // inside corner at the back of the slot
 ergo_r = 0.5;                                // ergo: the lip radius at the ends grows by this share
@@ -158,8 +157,8 @@ module insert_blank() xz(0, pk_d - clear) translate([0, floor_t + pk_h/2]) rrect
 // size mark centred on the band below the slot. The letters are about size tall and sit a little
 // high; they shrink to keep 1.5 mm of band above and below, and a band too low for size 4 gets no mark.
 module size_mark(label, floor_z = pk_floor) {
-    mark_z = (floor_t + clear + floor_z) / 2;
-    size = min(len(label) > 6 ? 7 : 9, floor_z - floor_t - clear - 3.5);
+    mark_z = (ins_bot + floor_z) / 2;
+    size = min(len(label) > 6 ? 7 : 9, floor_z - ins_bot - 3.5);
     if (size >= 4) translate([0, -eps, mark_z]) rotate([90, 0, 0]) mirror([0, 0, 1])
         linear_extrude(1) text(label, size = size, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
 }

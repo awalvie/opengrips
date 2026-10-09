@@ -11,3 +11,4 @@ grip_y = 8;
 // Housing walls around the pocket. Every housing shares these, so every housing takes every insert.
 floor_t = 8; side_t = 4; top_t = 8; back_t = 3;
 W = pk_w + 2*side_t; H = floor_t + pk_h + top_t; D = pk_d + back_t;
+ins_bot = floor_t + clear; ins_top = floor_t + pk_h - clear;   // bottom and top of every insert

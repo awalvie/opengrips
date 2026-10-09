@@ -12,12 +12,12 @@ roll_type = "unlevel";                       // "unlevel" (profile above) or "st
 roll_d = 28;                                 // body diameter; the unlevel profile scales with it
 axle_d = 12; spin_clear = 0.5; end_gap = 0.5;
 roll_top_gap = 2;                            // under the housing top wall, at the big lip
-roll_z = floor_t + pk_h - clear - roll_top_gap - roll_d/2;
+roll_z = ins_top - roll_top_gap - roll_d/2;
 roll_len = pk_w - 2*clear - 2*cheek_t - 2*end_gap;
 bore = axle_d + spin_clear;
 
 module insert_roller() {
-    z0 = floor_t + clear; iw = pk_w - 2*clear; id = pk_d - clear; ih = pk_h - 2*clear;
+    z0 = ins_bot; iw = pk_w - 2*clear; id = pk_d - clear; ih = pk_h - 2*clear;
     difference() {
         intersection() {   // clipped to the rounded insert outline
             union() {
