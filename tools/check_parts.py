@@ -74,7 +74,7 @@ def cases():
     out.append(("insert_flip", {"top_kind": "mono", "top_r": flip["top_r"]["max"], "top_ergo": flip["top_ergo"]["max"]}))
     out.append(("insert_flip", {"floor_t": spec["floor_t"]["max"]}))   # the insert sits higher in a thicker housing floor
     pocket = next(i for i in catalog.INSERTS if i["id"] == "pocket")
-    out.append(("insert_pocket", {"pocket_w": pocket["max_span"]}))
+    out.append(("insert_pocket", {"pocket_w": pocket["spans"][0]["max"]}))
     return out
 
 

@@ -536,7 +536,16 @@
      "simple": false
     }
    ],
-   "max_span": 93
+   "spans": [
+    {
+     "names": [
+      "pocket_n",
+      "pocket_w",
+      "pocket_gap"
+     ],
+     "max": 93
+    }
+   ]
   },
   {
    "id": "roller",

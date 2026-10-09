@@ -124,7 +124,8 @@ INSERTS = [
             num("pocket_gap", "Wall between", 6, 20, 1, 10),
             num("pocket_r", "Opening corner radius", 2, 11, 0.5, 8, help="Rounding of the pocket opening, seen from the front."),
         ] + POCKET_SHAPE,
-        "max_span": MAX_W,   # pocket_n * pocket_w + (pocket_n - 1) * pocket_gap
+        # a pocket row must fit: count * width + (count - 1) * wall <= max
+        "spans": [{"names": ["pocket_n", "pocket_w", "pocket_gap"], "max": MAX_W}],
     },
     {
         "id": "roller",

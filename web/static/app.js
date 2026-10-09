@@ -100,8 +100,6 @@ function busy(on) {
 
 // ---------- catalog helpers
 const insertDef = (id) => cat.inserts.find((i) => i.id === id);
-const allParams = () => cat.housing.params.concat(...cat.inserts.map((i) => i.params));
-const spec = (n) => allParams().find((p) => p.name === n);
 const defaults = (params) => Object.fromEntries(params.map((p) => [p.name, p.default]));
 const defOf = (it) => (it.type === "housing" ? cat.housing : insertDef(it.insertId));
 const partsOf = (it) => defOf(it).parts;
@@ -138,13 +136,24 @@ function ownParams(it) {
   return Object.fromEntries(defOf(it).params.filter((p) => it.values[p.name] !== p.default).map((p) => [p.name, it.values[p.name]]));
 }
 
+// a setting of one housing or insert: two inserts can share a name with different ranges
+const specIn = (def, n) => def.params.find((p) => p.name === n);
+// a row of pockets fits in the insert: count * width + (count - 1) * wall <= max
+const spanMax = (s, v) => Math.floor((s.max - (v[s.names[0]] - 1) * v[s.names[2]]) / v[s.names[0]]);
+// make a pocket row fit: narrower pockets first, then a thinner wall once they are at their least
+function fitSpan(s, v, def) {
+  const [n, w, g] = s.names;
+  if (v[w] > spanMax(s, v)) v[w] = Math.max(specIn(def, w).min, spanMax(s, v));
+  if (v[n] > 1 && v[n] * v[w] + (v[n] - 1) * v[g] > s.max) v[g] = Math.floor((s.max - v[n] * v[w]) / (v[n] - 1));
+}
+
 // ---------- rendering: OpenSCAD runs in a worker (render.js), the STLs stay in memory
-// Known parameters with values inside their range only, so a bad value never reaches OpenSCAD.
-// Defaults are left out, so equal shapes share one cache entry.
-function cleanParams(values) {
+// Known parameters of this housing or insert (def), with values inside their range only, so a bad
+// value never reaches OpenSCAD. Defaults are left out, so equal shapes share one cache entry.
+function cleanParams(values, def) {
   const out = {};
   Object.entries(values).forEach(([name, v]) => {
-    const p = spec(name);
+    const p = specIn(def, name);
     if (!p) throw new Error(`unknown parameter: ${name}`);
     if (p.type === "number") {
       if (typeof v !== "number" || !Number.isFinite(v)) throw new Error(`${name} must be a number`);
@@ -152,11 +161,10 @@ function cleanParams(values) {
     } else if (!p.options.some((o) => o.value === v)) throw new Error(`${name} has no option ${v}`);
     if (v !== p.default) out[name] = v;
   });
-  if (["pocket_n", "pocket_w", "pocket_gap"].some((n) => n in out)) {
-    const def = insertDef("pocket"), q = Object.assign(defaults(def.params), out);
-    if (q.pocket_n * q.pocket_w + (q.pocket_n - 1) * q.pocket_gap > def.max_span)
-      throw new Error("The pockets are wider than the insert. Use fewer or narrower pockets.");
-  }
+  const q = Object.assign(defaults(def.params), out);
+  (def.spans || []).forEach((s) => {
+    if (q[s.names[1]] > spanMax(s, q)) throw new Error("The pockets are wider than the insert. Use fewer or narrower pockets.");
+  });
   return out;
 }
 
@@ -186,9 +194,9 @@ worker.onerror = (e) => {
 
 const stls = new Map();   // key: part and clean parameters; value: a promise of the STL bytes
 const KEEP = 60;          // STLs kept, about 0.3 MB each: enough to go back and forth between items
-// print: turn the part the way it prints and put it on the bed (for_print in opengrips.scad)
-async function stl(part, params, print = false) {
-  const clean = cleanParams(params);
+// print: turn the part the way it prints and put it on the bed (for_print in opengrips.scad).
+// params come from cleanParams.
+async function stl(part, clean, print = false) {
   if (broken) throw broken;
   const key = JSON.stringify([part, print, Object.keys(clean).sort().map((k) => [k, clean[k]])]);
   let job = stls.get(key);
@@ -350,17 +358,24 @@ function edited() {
 
 // pockets: the width slider's maximum follows the count and the wall, so the pockets always fit
 function fitPockets() {
-  const w = document.querySelector("#p-pocket_w");
-  if (!w || cur().insertId !== "pocket") return;
-  const v = cur().values, def = insertDef("pocket");
-  const max = Math.floor((def.max_span - (v.pocket_n - 1) * v.pocket_gap) / v.pocket_n);
-  w.max = max;
-  if (v.pocket_w > max) { v.pocket_w = max; w.value = max; w.closest(".param").querySelector("output").textContent = `${max} mm`; }
+  const it = cur();
+  if (!it) return;
+  (defOf(it).spans || []).forEach((s) => {
+    const v = it.values, def = defOf(it);
+    fitSpan(s, v, def);
+    s.names.slice(1).forEach((n) => {
+      const input = document.querySelector("#p-" + n);
+      if (!input) return;
+      if (n === s.names[1]) input.max = Math.max(specIn(def, n).min, spanMax(s, v));
+      input.value = v[n]; input.closest(".param").querySelector("output").textContent = `${v[n]} mm`;
+      input.closest(".param").querySelector(".reset").hidden = v[n] === specIn(def, n).default;
+    });
+  });
 }
 
 function refreshVisibility() {
   document.querySelectorAll("#editor .param[data-name]").forEach((el) => {
-    el.hidden = !shown(spec(el.dataset.name), defOf(cur()));
+    el.hidden = !shown(specIn(defOf(cur()), el.dataset.name), defOf(cur()));
   });
 }
 
@@ -563,17 +578,19 @@ function drop(k) {
 async function update() {
   const my = ++seq, it = cur();
   const jobs = [];
-  if (it) {
+  try { if (it) {
     const p = partner(it);
     const h = it.type === "housing" ? it : p;
     const ins = it.type === "insert" ? it : p;
     // the insert lines up with the floor of the housing it is shown in
-    if (ins) partsOf(ins).forEach((q) => jobs.push({ part: q.part, params: Object.assign(ownParams(ins), h ? { floor_t: h.values.floor_t } : {}) }));
+    if (ins) partsOf(ins).forEach((q) => jobs.push({ part: q.part, params: Object.assign(cleanParams(ownParams(ins), defOf(ins)),
+                                                                         h ? cleanParams({ floor_t: h.values.floor_t }, cat.housing) : {}) }));
     if (h) {
-      jobs.push({ part: "housing", params: ownParams(h), ghost: it.type === "insert" });   // see-through around an insert
-      jobs.push({ part: "carabiner", params: ownParams(h) });
+      const params = cleanParams(ownParams(h), cat.housing);
+      jobs.push({ part: "housing", params, ghost: it.type === "insert" });   // see-through around an insert
+      jobs.push({ part: "carabiner", params });
     }
-  }
+  } } catch (e) { status(e.message, true); busy(false); return; }
   const keep = jobs.map((j) => j.part);
   Object.keys(meshes).forEach((k) => {
     if (!keep.includes(k)) drop(k);
@@ -638,7 +655,7 @@ async function downloadPart(p, it, b) {
   b.disabled = true; b.classList.add("busy");
   const no = toast(`Preparing ${fileOf(it, p)}…`, true);
   try {
-    const params = cleanParams(ownParams(it));
+    const params = cleanParams(ownParams(it), defOf(it));
     saveBlob(new Blob([await stl(p.part, params, true)], { type: "model/stl" }), fileOf(it, p));
     hideToast(no);
   } catch (e) {
@@ -673,7 +690,7 @@ async function downloadKit() {
   try {
     const files = picked().map(({ it, n, p }) => {
       const name = String(n + 1).padStart(2, "0") + "-" + fileOf(it, p);
-      return stl(p.part, cleanParams(ownParams(it)), true).then((data) => ({ name, data: new Uint8Array(data) }));
+      return stl(p.part, cleanParams(ownParams(it), defOf(it)), true).then((data) => ({ name, data: new Uint8Array(data) }));
     });
     saveBlob(await makeZip(await Promise.all(files)), "opengrips-kit.zip");
     hideToast(no);
@@ -724,7 +741,7 @@ function loadKit() {
       const it = x.h ? newHousing() : newInsert(x.i), own = defOf(it).params.map((p) => p.name);
       // a setting the page no longer has (from an older link) is dropped, the rest of the kit stays
       Object.entries(x.h || x.v || {}).forEach(([n, v]) => { if (own.includes(n)) it.values[n] = v; });
-      cleanParams(it.values);
+      cleanParams(it.values, defOf(it));
       return it;
     });
     kit.items.push(...items); kit.sel = Math.min(Math.max(0, k.s | 0), items.length - 1);
