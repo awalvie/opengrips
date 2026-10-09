@@ -10,7 +10,7 @@ Print everything in PETG. PLA gets brittle in the cold and slowly bends when it'
 
 | Part | Walls | Infill |
 | --- | --- | --- |
-| Housing, edge and pocket inserts, roller frame | 3 | 15% gyroid |
+| Housing, edge, flip and pocket inserts, roller frame | 3 | 15% gyroid |
 | Roller | 3 | 20% |
 | Printed axle | 4 | 100% |
 
@@ -24,6 +24,7 @@ Each part has one right way up. It keeps the load running along the layers and t
 | --- | --- | --- |
 | Housing | On its back, pocket opening up | Automatic, under the anchor |
 | Edge or pocket insert | Upside down, top face down | Only under the slot floor |
+| Flip insert | On its back, front up | None |
 | Roller frame | Upright, floor down | Under the two cheeks, where the latch arms are cut away |
 | Roller | Standing on one end | None |
 | Printed axle | Lying down | None |
@@ -35,6 +36,10 @@ Each part has one right way up. It keeps the load running along the layers and t
 | Roller frame | Roller | Axle |
 | --- | --- | --- |
 | ![Roller frame on the bed](docs/img/print-insert_roller.png) | ![Roller on the bed](docs/img/print-roller.png) | ![Axle on the bed](docs/img/print-axle.png) |
+
+| Flip insert |
+| --- |
+| ![Flip insert on the bed](docs/img/print-insert_flip.png) |
 
 If you render a part yourself, add `-D for_print=true` to get it the right way up:
 
@@ -52,6 +57,7 @@ I sliced the default parts in PrusaSlicer 2.9.6 with the settings above, PETG at
 | Housing, keel anchor | 90 g |
 | Edge insert, 20 mm | 87 g |
 | Pocket insert, three-finger | 88 g |
+| Flip insert, 20 and 10 mm | 87 g |
 | Roller frame | 41 g |
 | Roller, unlevel | 25 g |
 | Roller, straight | 30 g |

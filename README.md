@@ -21,6 +21,7 @@ This is a prototype, and I haven't load-tested it yet. Print and use it at your 
 ## What you can make
 
 - Edges from 6 to 35 mm deep: flat, ergo, incut up to 20°, or slopers down to 45°.
+- Flip inserts: two flat or ergo edges, 6 to 30 mm deep, in one insert. Turn it over to switch.
 - Pockets: mono, two-finger, three-finger, or up to three side by side.
 - Rollers: unlevel or straight.
 - Two anchors under the housing: a pyramid of four bars, or a keel plate with a hole.
@@ -31,7 +32,7 @@ Every anchor holds the carabiner right under the grip, so the edge should stay l
 
 ## Printing
 
-Print everything in PETG. The housing goes on its back and the inserts go upside down, and the files you download already sit that way. A housing and one edge insert take about 180 g of filament.
+Print everything in PETG. The housing and the flip insert go on their backs and the other inserts go upside down, and the files you download already sit that way. A housing and one edge insert take about 180 g of filament.
 
 The [printing guide](PRINTING.md) has the settings, where the supports go, and how to check the fit.
 
@@ -44,7 +45,7 @@ The [printing guide](PRINTING.md) has the settings, where the supports go, and h
 
 1. For the roller, drop it between the cheeks and push the axle through.
 2. Slide the insert into the housing until both side buttons click.
-3. To swap it, pinch both buttons and pull the insert out by the grip.
+3. To swap it, pinch both buttons and pull the insert out by the grip. To use the other edge of a flip insert, turn it over and push it back in.
 4. Clip the carabiner to the anchor under the housing.
 
 ## Working on it
