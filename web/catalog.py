@@ -61,6 +61,24 @@ HOUSING = {
     "show_if": {"bar_angle": ["anchor", "pyramid"], "keel_hole": ["anchor", "keel"]},
 }
 
+# Flip insert: two flat or ergo edges, one on top and one turned over under it. Each slot has
+# 16.5 mm of room down to the web; the lip radius stops at 3.5 so an ergo lip keeps 16 mm.
+def flip_edge(key, which, depth, radius):
+    return [
+        num(f"{key}_d", f"{which} edge depth", 6, 30, 1, depth, help="From the lip to the back of the slot.", simple=True),
+        num(f"{key}_r", f"{which} lip radius", 0.5, 3.5, 0.5, radius, help="Roundover on the lip. Small is sharp, big is friendly."),
+        num(f"{key}_ergo", f"{which} ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers."),
+    ]
+
+
+FLIP = {
+    "id": "flip",
+    "name": "Flip",
+    "blurb": "two edges, turn it over",
+    "parts": [{"part": "insert_flip", "name": "Flip insert", "supports": "no supports", "settings": SOLID}],
+    "params": flip_edge("top", "Top", 20, 3) + flip_edge("bot", "Bottom", 10, 2),
+}
+
 INSERTS = [
     {
         "id": "edge",
@@ -80,6 +98,7 @@ INSERTS = [
             num("ergo", "Ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers. The middle gets deeper, the ends shallower and rounder."),
         ],
     },
+    FLIP,
     {
         "id": "pocket",
         "name": "Pockets",
@@ -122,24 +141,6 @@ INSERTS = [
         ],
     },
 ]
-
-# Flip insert: two flat or ergo edges, one on top and one turned over under it. Each slot has
-# 16.5 mm of room down to the web; the lip radius stops at 3.5 so an ergo lip keeps 16 mm.
-def flip_edge(key, which, depth, radius):
-    return [
-        num(f"{key}_d", f"{which} edge depth", 6, 30, 1, depth, help="From the lip to the back of the slot.", simple=True),
-        num(f"{key}_r", f"{which} lip radius", 0.5, 3.5, 0.5, radius, help="Roundover on the lip. Small is sharp, big is friendly."),
-        num(f"{key}_ergo", f"{which} ergo curve", 0, 8, 0.5, 0, help="The lip curves this far back in the middle for the longer middle fingers."),
-    ]
-
-
-FLIP = {
-    "id": "flip",
-    "name": "Flip",
-    "blurb": "two edges, turn it over",
-    "parts": [{"part": "insert_flip", "name": "Flip insert", "supports": "no supports", "settings": SOLID}],
-    "params": flip_edge("top", "Top", 20, 3) + flip_edge("bot", "Bottom", 10, 2),
-}
 
 # Common commercial edges (Tension Pro Edge: 8, 10, 15, 20, 25 mm, ergo, pocket, mono). tools/check_parts.py renders
 # each of them; the page does not show them.

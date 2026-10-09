@@ -52,7 +52,6 @@ def cases():
         out.append(("insert_pocket", params))
     out.append(("insert_edge", {"slot_w": spec["slot_w"]["max"]}))
     # flip: every corner of the top edge, with the bottom edge at the opposite corner
-    out.append(("insert_flip", {}))
     flip = {p["name"]: p for p in catalog.FLIP["params"]}
     for values in itertools.product(*((flip[f"top_{n}"]["min"], flip[f"top_{n}"]["max"]) for n in ("d", "r", "ergo"))):
         top = dict(zip(("top_d", "top_r", "top_ergo"), values))
