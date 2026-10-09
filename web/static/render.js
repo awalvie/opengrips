@@ -34,10 +34,18 @@ async function load() {
 
 async function render(part, params) {
   const log = [];
-  const inst = await OpenSCAD({
+  // Emscripten has no failure callback for instantiateWasm: without the race, a failed start
+  // (out of memory on a phone, say) leaves this job and every one queued after it waiting forever
+  let fail;
+  const failed = new Promise((_, reject) => { fail = reject; });
+  const inst = await Promise.race([OpenSCAD({
     noInitialRun: true, print: (s) => log.push(s), printErr: (s) => log.push(s),
-    instantiateWasm: (imports, done) => { WebAssembly.instantiate(wasm, imports).then((i) => done(i, wasm)); return {}; },
-  });
+    instantiateWasm: (imports, done) => {
+      WebAssembly.instantiate(wasm, imports).then((i) => done(i, wasm),
+        (e) => fail(new Error(`The 3D renderer could not start: ${e.message}`)));
+      return {};
+    },
+  }), failed]);
   const FS = inst.FS;
   for (const [path, data] of Object.entries(files)) {
     let dir = "";
