@@ -15,6 +15,7 @@ include <src/inserts/pocket.scad>
 include <src/inserts/roller.scad>
 include <src/inserts/flip.scad>
 include <src/refs.scad>
+include <src/fit_test.scad>
 
 // for_print = true turns a printed part to the orientation in its print note and puts it on z = 0.
 // The parts are modelled where they sit in the assembled block.
@@ -29,6 +30,9 @@ module on_bed() {
     else if (part == "roller" || part == "roller_straight")
         translate([0, 0, roll_len/2]) rotate([0, 90, 0]) translate([0, -grip_y, -roll_z]) children();   // on one end
     else if (part == "axle") translate([0, -grip_y, axle_d/2 - roll_z]) children();     // lying down
+    else if (part == "fit_ring" || part == "fit_frame") rotate([90, 0, 0]) children();   // front face down: the ring's flared first layer stays in its bevel, the frame's leads into the ring
+    else if (part == "fit_channel") translate([0, 0, D]) rotate([-90, 0, 0]) children();          // on its back, like the housing
+    else if (part == "fit_cheek") translate([0, 0, pk_d - clear]) rotate([-90, 0, 0]) children();  // on its back: the arm grows from its root
     else children();
 }
 
@@ -41,6 +45,10 @@ on_bed() {
     if (part == "roller") roller_any();
     if (part == "roller_straight") roller_straight();
     if (part == "axle") axle();
+    if (part == "fit_ring") fit_ring();
+    if (part == "fit_frame") fit_frame();
+    if (part == "fit_channel") fit_channel();
+    if (part == "fit_cheek") fit_cheek();
 }
 if (part == "finger") finger();
 if (part == "carabiner") carabiner(seat_z(), seat_rot());

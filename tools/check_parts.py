@@ -2,7 +2,8 @@
 
 Usage: python3 tools/check_parts.py [-j JOBS]
 
-Cases: every anchor, every preset, and the corners of the edge, pocket and flip ranges in web/catalog.py.
+Cases: every anchor, every preset, the corners of the edge, pocket and flip ranges in web/catalog.py,
+and the fit test.
 Checks: one watertight body. Edges and pockets also keep their depth, a floor under the slot, a
 rail over the slot at the face, a wall under the size mark, and a wall between the slot end and
 the latch arm. Each edge of a flip insert gets the edge checks and keeps room for the fingers.
@@ -51,6 +52,7 @@ def cases():
         out.append(("insert_edge", params))
         out.append(("insert_pocket", params))
     out.append(("insert_edge", {"slot_w": spec["slot_w"]["max"]}))
+    out += [("fit_ring", {}), ("fit_frame", {}), ("fit_channel", {}), ("fit_cheek", {})]
     # flip: every corner of the top edge, with the bottom edge at the opposite corner
     flip = {p["name"]: p for p in catalog.FLIP["params"]}
     for values in itertools.product(*((flip[f"top_{n}"]["min"], flip[f"top_{n}"]["max"]) for n in ("d", "r", "ergo"))):
